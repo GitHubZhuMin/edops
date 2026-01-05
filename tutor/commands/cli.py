@@ -4,6 +4,8 @@ import sys
 import typing as t
 
 import appdirs
+import os
+
 import click
 
 from tutor import exceptions, fmt, hooks, utils
@@ -101,7 +103,7 @@ class TutorCli(click.Group):
 )
 @click.pass_context
 def cli(context: click.Context, root: str, show_help: bool) -> None:
-    if utils.is_root():
+    if utils.is_root() and not os.environ.get("TUTOR_IGNORE_ROOT_WARNING"):
         fmt.echo_alert(
             "You are running Tutor as root. This is strongly not recommended. If you are doing this in order to access"
             " the Docker daemon, you should instead add your user to the 'docker' group. (see https://docs.docker.com"
