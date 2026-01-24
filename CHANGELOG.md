@@ -20,6 +20,30 @@ instructions, because git commits are used to generate release notes:
 
 <!-- scriv-insert-here -->
 
+<<<<<<< HEAD
+<a id='changelog-20.0.4'></a>
+## v20.0.4 (2025-12-22)
+
+- [Chore] Update hatch definition for version. (by @mlabeeb03)
+
+- [Improvement] Add ability to not delete namespace while running `tutor k8s delete` command. (by @mlabeeb03)
+
+- [Security] Add upstream security fix as patch in Open edX image (by @ahmed-arb)
+
+[Security] Bump urllib3 from 2.5.0 to 2.6.0 to address Dependabot alerts.
+
+<a id='changelog-20.0.3'></a>
+## v20.0.3 (2025-12-03)
+
+- [Bugfix] Fix packaging issue where a stray `venv/` directory was included in the source distribution (sdist)
+for previous releases. The build configuration now correctly excludes the `venv/` folder from package archives. (by @ahmed-arb)
+
+- [Feature] Add tutor livedeps to the list of plugins available by default. (by @mlabeeb03)
+
+- [Feature] Update OPENEDX_COMMON_VERSION to teak.3 tag (by @ahmed-arb)
+
+=======
+>>>>>>> origin/refactor/config-system-refactor
 <a id='changelog-20.0.2'></a>
 ## v20.0.2 (2025-10-20)
 

@@ -26,7 +26,10 @@ services:
     {% endif %}
 
   ############# LMS and CMS workers
+<<<<<<< HEAD
+=======
   {% if RUN_OPENEDX -%}
+>>>>>>> origin/refactor/config-system-refactor
   lms-worker:
     image: {{ DOCKER_IMAGE_OPENEDX }}
     environment:
@@ -68,6 +71,9 @@ services:
       {%- endfor %}
     depends_on:
       - cms
+<<<<<<< HEAD
+=======
   {%- endif %}
+>>>>>>> origin/refactor/config-system-refactor
 
   {{ patch("local-docker-compose-prod-services")|indent(2) }}

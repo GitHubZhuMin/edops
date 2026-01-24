@@ -10,7 +10,11 @@ from tutor import exceptions, fmt, hooks
 from tutor.types import Config
 
 # Import modules to trigger hook creation
+<<<<<<< HEAD
+from . import openedx, v0, v1
+=======
 from . import openedx, v0, v1  # noqa: F401
+>>>>>>> origin/refactor/config-system-refactor
 
 
 def is_installed(name: str) -> bool:
@@ -26,8 +30,13 @@ def iter_installed() -> t.Iterator[str]:
 
     This will yield all plugins, including those that have the same name.
 
+<<<<<<< HEAD
+    The CORE_READY action must have been triggered prior to calling this function,
+    otherwise no installed plugin will be detected.
+=======
     The CORE_READY action must have been triggered prior to calling this
     function, otherwise no installed plugin will be detected.
+>>>>>>> origin/refactor/config-system-refactor
     """
     yield from sorted(hooks.Filters.PLUGINS_INSTALLED.iterate())
 
@@ -39,6 +48,12 @@ def iter_info() -> t.Iterator[tuple[str, t.Optional[str]]]:
     Yields (<plugin name>, <info>) tuples.
     """
 
+<<<<<<< HEAD
+    def plugin_info_name(info: tuple[str, t.Optional[str]]) -> str:
+        return info[0]
+
+    yield from sorted(hooks.Filters.PLUGINS_INFO.iterate(), key=plugin_info_name)
+=======
     def plugin_info_name(
         info: tuple[str, t.Optional[str]]
     ) -> str:
@@ -47,6 +62,7 @@ def iter_info() -> t.Iterator[tuple[str, t.Optional[str]]]:
     yield from sorted(
         hooks.Filters.PLUGINS_INFO.iterate(), key=plugin_info_name
     )
+>>>>>>> origin/refactor/config-system-refactor
 
 
 def is_loaded(name: str) -> bool:
@@ -57,6 +73,13 @@ def load_all(names: t.Iterable[str]) -> None:
     """
     Load all plugins one by one.
 
+<<<<<<< HEAD
+    Plugins are loaded in alphabetical order. We ignore plugins which failed to load.
+    After all plugins have been loaded, the PLUGINS_LOADED action is triggered.
+    """
+    names = sorted(set(names))
+    for name in names:
+=======
     Plugins are loaded in alphabetical order. We ignore plugins which
     failed to load. After all plugins have been loaded, the PLUGINS_LOADED
     action is triggered.
@@ -66,6 +89,7 @@ def load_all(names: t.Iterable[str]) -> None:
         # 检查插件是否已安装，如果未安装则静默跳过（不显示警告）
         if not is_installed(name):
             continue
+>>>>>>> origin/refactor/config-system-refactor
         try:
             load(name)
         except Exception as e:
@@ -77,8 +101,13 @@ def load(name: str) -> None:
     """
     Load a given plugin, thus declaring all its hooks.
 
+<<<<<<< HEAD
+    Loading a plugin is done within a context, such that we can remove all hooks when a
+    plugin is disabled, or during unit tests.
+=======
     Loading a plugin is done within a context, such that we can remove
     all hooks when a plugin is disabled, or during unit tests.
+>>>>>>> origin/refactor/config-system-refactor
     """
     if not is_installed(name):
         raise exceptions.TutorError(f"plugin '{name}' is not installed.")

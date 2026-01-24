@@ -10,7 +10,10 @@ import importlib_resources
 import jinja2
 
 from tutor import exceptions, fmt, hooks, plugins, utils
+<<<<<<< HEAD
+=======
 from tutor.edops import modules as edops_modules
+>>>>>>> origin/refactor/config-system-refactor
 from tutor.__about__ import __app__, __version__, __version_suffix__
 from tutor.types import Config, ConfigValue
 
@@ -330,9 +333,12 @@ hooks.Filters.ENV_PATTERNS_IGNORE.add_items(
         r".*\.pyc$",
         # Skip files from "partials" folders
         r"(.*/)?partials(/.*)?$",
+<<<<<<< HEAD
+=======
         # 忽略所有 Open edX 相关模板（仅交付 zhjx 业务）
         r"apps/openedx(/.*)?$",
         r"build/openedx(/.*)?$",
+>>>>>>> origin/refactor/config-system-refactor
     ]
 )
 
@@ -344,7 +350,10 @@ def save(root: str, config: Config) -> None:
     root_env = pathjoin(root)
     for src, dst in hooks.Filters.ENV_TEMPLATE_TARGETS.iterate():
         save_all_from(src, os.path.join(root_env, dst), config)
+<<<<<<< HEAD
+=======
     edops_modules.render_modules(root_env, config)
+>>>>>>> origin/refactor/config-system-refactor
 
     upgrade_obsolete(root)
     fmt.echo_info(f"Environment generated in {base_dir(root)}")

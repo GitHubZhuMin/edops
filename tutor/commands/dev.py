@@ -41,7 +41,11 @@ class DevContext(compose.BaseComposeContext):
         return DevTaskRunner(self.root, config)
 
 
+<<<<<<< HEAD
+@click.group(help="Run Open edX locally with development settings")
+=======
 @click.group(help="使用开发设置在本地运行 EdOps 平台")
+>>>>>>> origin/refactor/config-system-refactor
 @click.pass_context
 def dev(context: click.Context) -> None:
     context.obj = DevContext(context.obj.root)
@@ -64,11 +68,14 @@ def parse_ports(docker_compose_ps_output: str) -> list[int]:
 @click.command(help="List the status of all services.")
 @click.pass_obj
 def hosts(context: compose.BaseComposeContext) -> None:
+<<<<<<< HEAD
+=======
     # 临时处理：此指令暂未启用，待后续支持
     fmt.echo_info("⚠️  hosts 指令暂未启用，待后续支持...")
     return
 
     # 以下为原有逻辑（暂未启用）
+>>>>>>> origin/refactor/config-system-refactor
     config = tutor_config.load(context.root)
     docker_compose_ps_output = (
         context.job_runner(config)

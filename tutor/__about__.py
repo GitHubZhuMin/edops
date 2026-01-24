@@ -2,7 +2,11 @@ import os
 
 # Increment this version number to trigger a new release. See
 # docs/tutor.html#versioning for information on the versioning scheme.
+<<<<<<< HEAD
+__version__ = "20.0.4"
+=======
 __version__ = "20.0.2"
+>>>>>>> origin/refactor/config-system-refactor
 
 # The version suffix will be appended to the actual version, separated by a
 # dash. Use this suffix to differentiate between the actual released version and

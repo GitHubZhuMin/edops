@@ -208,14 +208,23 @@ class K8sContext(BaseTaskContext):
         return K8sTaskRunner(self.root, config)
 
 
+<<<<<<< HEAD
+@click.group(help="Run Open edX on Kubernetes")
+=======
 @click.group(help="在 Kubernetes 上运行 EdOps 平台")
+>>>>>>> origin/refactor/config-system-refactor
 @click.pass_context
 def k8s(context: click.Context) -> None:
     context.obj = K8sContext(context.obj.root)
 
 
+<<<<<<< HEAD
+@click.command(help="Configure and run Open edX from scratch")
+@click.option("-I", "--non-interactive", is_flag=True, help="Run non-interactively")
+=======
 @click.command(help="从头配置并运行 EdOps 平台")
 @click.option("-I", "--non-interactive", is_flag=True, help="非交互式运行")
+>>>>>>> origin/refactor/config-system-refactor
 @click.pass_context
 def launch(context: click.Context, non_interactive: bool) -> None:
     run_upgrade_from_release = tutor_env.should_upgrade_from_release(context.obj.root)
@@ -256,7 +265,11 @@ Press enter when you are ready to continue"""
 
     config = tutor_config.load(context.obj.root)
     fmt.echo_info(
+<<<<<<< HEAD
+        """Your Open edX platform is ready and can be accessed at the following urls:
+=======
         """EdOps 平台已准备就绪，可通过以下 URL 访问：
+>>>>>>> origin/refactor/config-system-refactor
 
     {http}://{lms_host}
     {http}://{cms_host}
@@ -269,9 +282,15 @@ Press enter when you are ready to continue"""
 
 
 @click.command(
+<<<<<<< HEAD
+    short_help="Run all configured Open edX resources",
+    help=(
+        "Run all configured Open edX resources. You may limit this command to "
+=======
     short_help="运行所有已配置的 EdOps 资源",
     help=(
         "运行所有已配置的 EdOps 资源。您可以限制此命令仅运行 "
+>>>>>>> origin/refactor/config-system-refactor
         "some resources by passing name arguments."
     ),
 )
@@ -355,22 +374,70 @@ def delete_resources(
     )
 
 
+<<<<<<< HEAD
+@click.command(help="Reboot an existing platform")
+=======
 @click.command(help="重启现有平台")
+>>>>>>> origin/refactor/config-system-refactor
 @click.pass_context
 def reboot(context: click.Context) -> None:
     context.invoke(stop)
     context.invoke(start)
 
 
+<<<<<<< HEAD
+@click.command(help="Completely delete an existing platform")
+@click.option("-y", "--yes", is_flag=True, help="Do not ask for confirmation")
+@click.option("--exclude-namespace", is_flag=True, help="Do not delete the namespace")
+@click.pass_obj
+def delete(context: K8sContext, yes: bool, exclude_namespace: bool) -> None:
+=======
 @click.command(help="完全删除现有平台")
 @click.option("-y", "--yes", is_flag=True, help="不要求确认")
 @click.pass_obj
 def delete(context: K8sContext, yes: bool) -> None:
+>>>>>>> origin/refactor/config-system-refactor
     if not yes:
         click.confirm(
             "Are you sure you want to delete the platform? All data will be removed.",
             abort=True,
         )
+<<<<<<< HEAD
+    if not exclude_namespace:
+        utils.kubectl(
+            "delete",
+            "-k",
+            tutor_env.pathjoin(context.root),
+            "--ignore-not-found=true",
+            "--wait",
+        )
+    else:
+        # Fetch all the resources that would have been deleted
+        # and remove namespace from the list. Delete the remaining
+        # resources with a separate call.
+        resources: list[str] = [
+            line.decode("utf-8").strip()
+            for line in utils.check_output(
+                "kubectl",
+                "delete",
+                "-k",
+                tutor_env.pathjoin(context.root),
+                "--dry-run=client",
+                "-o",
+                "name",
+            ).splitlines()
+            if not line.startswith(b"namespace/")
+        ]
+        config = tutor_config.load(context.root)
+        utils.kubectl(
+            "delete",
+            "--namespace",
+            k8s_namespace(config),
+            "--ignore-not-found=true",
+            "--wait",
+            *resources,
+        )
+=======
     utils.kubectl(
         "delete",
         "-k",
@@ -378,6 +445,7 @@ def delete(context: K8sContext, yes: bool) -> None:
         "--ignore-not-found=true",
         "--wait",
     )
+>>>>>>> origin/refactor/config-system-refactor
 
 
 @jobs.do_group
@@ -403,14 +471,23 @@ def do(context: K8sContext) -> None:
                 wait_for_deployment_ready(config, name)
 
 
+<<<<<<< HEAD
+@click.command(help="Initialise all applications")
+@click.option("-l", "--limit", help="Limit initialisation to this service or plugin")
+=======
 @click.command(help="初始化所有应用")
 @click.option("-l", "--limit", help="将初始化限制到此服务或插件")
+>>>>>>> origin/refactor/config-system-refactor
 @click.pass_context
 def init(context: click.Context, limit: Optional[str]) -> None:
     context.invoke(do.commands["init"], limit=limit)
 
 
+<<<<<<< HEAD
+@click.command(help="Scale the number of replicas of a given deployment")
+=======
 @click.command(help="扩展给定部署的副本数量")
+>>>>>>> origin/refactor/config-system-refactor
 @click.argument("deployment")
 @click.argument("replicas", type=int)
 @click.pass_obj
@@ -441,16 +518,27 @@ def exec_command(context: K8sContext, service: str, args: List[str]) -> None:
     kubectl_exec(config, service, args)
 
 
+<<<<<<< HEAD
+@click.command(help="View output from containers")
+@click.option("-c", "--container", help="Print the logs of this specific container")
+@click.option("-f", "--follow", is_flag=True, help="Follow log output")
+@click.option("--tail", type=int, help="Number of lines to show from each container")
+=======
 @click.command(help="查看容器输出")
 @click.option("-c", "--container", help="打印此特定容器的日志")
 @click.option("-f", "--follow", is_flag=True, help="跟踪日志输出")
 @click.option("--tail", type=int, help="从每个容器显示的行数")
+>>>>>>> origin/refactor/config-system-refactor
 @click.option(
     "-m",
     "--max-log-requests",
     "max_log_requests",
     type=int,
+<<<<<<< HEAD
+    help="Maximum allowed concurrency while streaming logs",
+=======
     help="流式传输日志时允许的最大并发数",
+>>>>>>> origin/refactor/config-system-refactor
 )
 @click.argument("service")
 @click.pass_obj
@@ -479,7 +567,11 @@ def logs(
     utils.kubectl(*command)
 
 
+<<<<<<< HEAD
+@click.command(help="Wait for a pod to become ready")
+=======
 @click.command(help="等待 pod 就绪")
+>>>>>>> origin/refactor/config-system-refactor
 @click.argument("name")
 @click.pass_obj
 def wait(context: K8sContext, name: str) -> None:
@@ -504,8 +596,13 @@ def upgrade(context: click.Context, from_release: Optional[str]) -> None:
         fmt.echo_info("Your environment is already up-to-date")
     else:
         fmt.echo_alert(
+<<<<<<< HEAD
+            "This command only performs a partial upgrade of your Open edX platform. "
+            "To perform a full upgrade, you should run `tutor k8s launch`."
+=======
             "此命令仅执行 EdOps 平台的部分升级。"
             "要执行完整升级，请运行 `edops k8s launch`。"
+>>>>>>> origin/refactor/config-system-refactor
         )
         upgrade_from(context, from_release)
     # We update the environment to update the version
@@ -546,7 +643,11 @@ def kubectl_apply(root: str, *args: str, prune_configmaps: bool = False) -> None
     utils.kubectl(*cmd_args)
 
 
+<<<<<<< HEAD
+@click.command(help="Print status information for all k8s resources")
+=======
 @click.command(help="打印所有 k8s 资源的状态信息")
+>>>>>>> origin/refactor/config-system-refactor
 @click.pass_obj
 def status(context: K8sContext) -> int:
     config = tutor_config.load(context.root)

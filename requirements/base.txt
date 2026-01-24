@@ -5,7 +5,11 @@
 #    pip-compile requirements/base.in
 #
 appdirs==1.4.4
+<<<<<<< HEAD
+    # via -r base.in
+=======
     # via -r requirements/base.in
+>>>>>>> origin/refactor/config-system-refactor
 cachetools==5.5.2
     # via google-auth
 certifi==2025.8.3
@@ -15,7 +19,11 @@ certifi==2025.8.3
 charset-normalizer==3.4.3
     # via requests
 click==8.1.8
+<<<<<<< HEAD
+    # via -r base.in
+=======
     # via -r requirements/base.in
+>>>>>>> origin/refactor/config-system-refactor
 durationpy==0.10
     # via kubernetes
 google-auth==2.40.3
@@ -23,6 +31,19 @@ google-auth==2.40.3
 idna==3.10
     # via requests
 importlib-metadata==8.7.0
+<<<<<<< HEAD
+    # via -r base.in
+importlib-resources==6.5.2
+    # via -r base.in
+jinja2==3.1.6
+    # via -r base.in
+kubernetes==33.1.0
+    # via -r base.in
+markupsafe==3.0.2
+    # via jinja2
+mypy==1.18.2
+    # via -r base.in
+=======
     # via -r requirements/base.in
 importlib-resources==6.5.2
     # via -r requirements/base.in
@@ -34,6 +55,7 @@ markupsafe==3.0.2
     # via jinja2
 mypy==1.18.2
     # via -r requirements/base.in
+>>>>>>> origin/refactor/config-system-refactor
 mypy-extensions==1.1.0
     # via mypy
 oauthlib==3.3.1
@@ -41,7 +63,11 @@ oauthlib==3.3.1
     #   kubernetes
     #   requests-oauthlib
 packaging==25.0
+<<<<<<< HEAD
+    # via -r base.in
+=======
     # via -r requirements/base.in
+>>>>>>> origin/refactor/config-system-refactor
 pathspec==0.12.1
     # via mypy
 pyasn1==0.6.1
@@ -51,12 +77,20 @@ pyasn1==0.6.1
 pyasn1-modules==0.4.2
     # via google-auth
 pycryptodome==3.23.0
+<<<<<<< HEAD
+    # via -r base.in
+=======
     # via -r requirements/base.in
+>>>>>>> origin/refactor/config-system-refactor
 python-dateutil==2.9.0.post0
     # via kubernetes
 pyyaml==6.0.2
     # via
+<<<<<<< HEAD
+    #   -r base.in
+=======
     #   -r requirements/base.in
+>>>>>>> origin/refactor/config-system-refactor
     #   kubernetes
 requests==2.32.5
     # via
@@ -74,9 +108,15 @@ tomli==2.2.1
     # via mypy
 typing-extensions==4.15.0
     # via
+<<<<<<< HEAD
+    #   -r base.in
+    #   mypy
+urllib3==2.6.0
+=======
     #   -r requirements/base.in
     #   mypy
 urllib3==2.5.0
+>>>>>>> origin/refactor/config-system-refactor
     # via
     #   kubernetes
     #   requests

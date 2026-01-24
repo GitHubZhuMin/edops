@@ -33,7 +33,10 @@ configMapGenerator:
   options:
     labels:
         app.kubernetes.io/name: caddy
+<<<<<<< HEAD
+=======
 {% if RUN_OPENEDX -%}
+>>>>>>> origin/refactor/config-system-refactor
 - name: openedx-settings-lms
   files:{% for file in "apps/openedx/settings/lms"|walk_templates %}
   - {{ file }}{% endfor %}
@@ -58,7 +61,10 @@ configMapGenerator:
   options:
     labels:
         app.kubernetes.io/name: openedx
+<<<<<<< HEAD
+=======
 {%- endif %}
+>>>>>>> origin/refactor/config-system-refactor
 - name: redis-config
   files:
   - apps/redis/redis.conf

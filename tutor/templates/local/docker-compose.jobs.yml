@@ -17,7 +17,10 @@ services:
       image: {{ DOCKER_IMAGE_MYSQL }}
       depends_on: {{ [("mysql", RUN_MYSQL)]|list_if }}
 
+<<<<<<< HEAD
+=======
     {% if RUN_OPENEDX -%}
+>>>>>>> origin/refactor/config-system-refactor
     lms-job:
       image: {{ DOCKER_IMAGE_OPENEDX }}
       environment:
@@ -45,6 +48,9 @@ services:
         - {{ mount }}
         {%- endfor %}
       depends_on: {{ [("mysql", RUN_MYSQL), ("mongodb", RUN_MONGODB), ("meilisearch", RUN_MEILISEARCH), ("redis", RUN_REDIS)]|list_if }}
+<<<<<<< HEAD
+=======
     {%- endif %}
+>>>>>>> origin/refactor/config-system-refactor
 
     {{ patch("local-docker-compose-jobs-services")|indent(4) }}

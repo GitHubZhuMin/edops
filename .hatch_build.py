@@ -9,8 +9,11 @@ HERE = os.path.dirname(__file__)
 
 class MetaDataHook(MetadataHookInterface):
     def update(self, metadata: dict[str, t.Any]) -> None:
+<<<<<<< HEAD
+=======
         about = load_about()
         metadata["version"] = about["__package_version__"]
+>>>>>>> origin/refactor/config-system-refactor
         metadata["dependencies"] = load_requirements("base.in")
         metadata["optional-dependencies"] = {
             "dev": load_requirements("dev.txt"),
@@ -18,6 +21,8 @@ class MetaDataHook(MetadataHookInterface):
         }
 
 
+<<<<<<< HEAD
+=======
 def load_about() -> dict[str, str]:
     about: dict[str, str] = {}
     with open(os.path.join(HERE, "tutor", "__about__.py"), "rt", encoding="utf-8") as f:
@@ -25,6 +30,7 @@ def load_about() -> dict[str, str]:
     return about
 
 
+>>>>>>> origin/refactor/config-system-refactor
 def load_requirements(filename: str) -> list[str]:
     requirements = []
     with open(

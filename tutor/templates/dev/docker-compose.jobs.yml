@@ -1,4 +1,7 @@
+<<<<<<< HEAD
+=======
 {% if RUN_OPENEDX -%}
+>>>>>>> origin/refactor/config-system-refactor
 x-openedx-job-service:
   &openedx-job-service
   image: {{ DOCKER_IMAGE_OPENEDX_DEV }}
@@ -15,11 +18,17 @@ x-openedx-job-service:
     - ../apps/openedx/config:/openedx/config:ro
     # theme files
     - ../build/openedx/themes:/openedx/themes
+<<<<<<< HEAD
+
+services:
+
+=======
 {%- endif %}
 
 services:
 
   {% if RUN_OPENEDX -%}
+>>>>>>> origin/refactor/config-system-refactor
   lms-job:
     <<: *openedx-job-service
     environment:
@@ -30,6 +39,9 @@ services:
     <<: *openedx-job-service
     environment:
       DJANGO_SETTINGS_MODULE: cms.envs.tutor.development
+<<<<<<< HEAD
+=======
   {%- endif %}
+>>>>>>> origin/refactor/config-system-refactor
 
   {{ patch("dev-docker-compose-jobs-services")|indent(2) }}

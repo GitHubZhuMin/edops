@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+<<<<<<< HEAD
+import click
+
+from tutor import env as tutor_env
+from tutor import hooks
+from tutor.commands import compose
+=======
 import json
 import typing as t
 
@@ -11,6 +18,7 @@ from tutor import fmt
 from tutor import hooks
 from tutor.commands import compose
 from tutor.edops import modules as edops_modules
+>>>>>>> origin/refactor/config-system-refactor
 from tutor.types import Config, get_typed
 
 
@@ -21,6 +29,18 @@ class LocalTaskRunner(compose.ComposeTaskRunner):
         """
         super().__init__(root, config)
         self.project_name = get_typed(self.config, "LOCAL_PROJECT_NAME", str)
+<<<<<<< HEAD
+        self.docker_compose_files += [
+            tutor_env.pathjoin(self.root, "local", "docker-compose.yml"),
+            tutor_env.pathjoin(self.root, "local", "docker-compose.prod.yml"),
+            tutor_env.pathjoin(self.root, "local", "docker-compose.override.yml"),
+            tutor_env.pathjoin(self.root, "local", "docker-compose.prod.override.yml"),
+        ]
+        self.docker_compose_job_files += [
+            tutor_env.pathjoin(self.root, "local", "docker-compose.jobs.yml"),
+            tutor_env.pathjoin(self.root, "local", "docker-compose.jobs.override.yml"),
+        ]
+=======
         module_targets = edops_modules.get_enabled_module_targets(self.config)
         if module_targets:
             self.docker_compose_files = [
@@ -40,6 +60,7 @@ class LocalTaskRunner(compose.ComposeTaskRunner):
                 tutor_env.pathjoin(self.root, "local", "docker-compose.jobs.yml"),
                 tutor_env.pathjoin(self.root, "local", "docker-compose.jobs.override.yml"),
             ]
+>>>>>>> origin/refactor/config-system-refactor
 
 
 class LocalContext(compose.BaseComposeContext):
@@ -50,7 +71,11 @@ class LocalContext(compose.BaseComposeContext):
         return LocalTaskRunner(self.root, config)
 
 
+<<<<<<< HEAD
+@click.group(help="Run Open edX locally with docker-compose")
+=======
 @click.group(help="使用 docker-compose 在本地运行 EdOps 平台")
+>>>>>>> origin/refactor/config-system-refactor
 @click.pass_context
 def local(context: click.Context) -> None:
     context.obj = LocalContext(context.obj.root)
@@ -67,6 +92,9 @@ def _stop_on_dev_start(root: str, config: Config, project_name: str) -> None:
         runner.docker_compose("stop")
 
 
+<<<<<<< HEAD
+compose.add_commands(local)
+=======
 @click.command(name="status", help="显示 EdOps 模块的详细状态")
 @click.option(
     "--module",
@@ -330,3 +358,4 @@ local.add_command(edops_status)
 local.add_command(healthcheck)
 local.add_command(deployment_history)
 local.add_command(rollback)
+>>>>>>> origin/refactor/config-system-refactor

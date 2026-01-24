@@ -124,7 +124,11 @@ class PushImageNameParam(ImageNameParam):
             yield name
 
 
+<<<<<<< HEAD
+@click.group(name="images", short_help="Manage docker images")
+=======
 @click.group(name="images", short_help="管理 docker 镜像")
+>>>>>>> origin/refactor/config-system-refactor
 def images_command() -> None:
     pass
 
@@ -137,49 +141,84 @@ def images_command() -> None:
     type=BuildImageNameParam(),
 )
 @click.option(
+<<<<<<< HEAD
+    "--no-cache", is_flag=True, help="Do not use cache when building the image"
+=======
     "--no-cache", is_flag=True, help="构建镜像时不使用缓存"
+>>>>>>> origin/refactor/config-system-refactor
 )
 @click.option(
     "--no-registry-cache",
     is_flag=True,
+<<<<<<< HEAD
+    help="Do not use registry cache when building the image",
+=======
     help="构建镜像时不使用仓库缓存",
+>>>>>>> origin/refactor/config-system-refactor
 )
 @click.option(
     "--cache-to-registry",
     is_flag=True,
+<<<<<<< HEAD
+    help="Push the build cache to the remote registry. You should only enable this option if you have push rights to the remote registry.",
+=======
     help="将构建缓存推送到远程仓库。仅当您拥有远程仓库的推送权限时才启用此选项。",
+>>>>>>> origin/refactor/config-system-refactor
 )
 @click.option(
     "--output",
     "docker_output",
+<<<<<<< HEAD
+    # Export image to docker. This is necessary to make the image available to docker-compose.
+    # The `--load` option is a shorthand for `--output=type=docker`.
+    default="type=docker",
+    help="Same as `docker build --output=...`.",
+=======
     # 导出镜像到 docker。这是使镜像可用于 docker-compose 所必需的。
     # `--load` 选项是 `--output=type=docker` 的简写。
     default="type=docker",
     help="与 `docker build --output=...` 相同。",
+>>>>>>> origin/refactor/config-system-refactor
 )
 @click.option(
     "-a",
     "--build-arg",
     "build_args",
     multiple=True,
+<<<<<<< HEAD
+    help="Set build-time docker ARGS in the form 'myarg=value'. This option may be specified multiple times.",
+=======
     help="以 'myarg=value' 形式设置构建时的 docker ARGS。此选项可以多次指定。",
+>>>>>>> origin/refactor/config-system-refactor
 )
 @click.option(
     "--add-host",
     "add_hosts",
     multiple=True,
+<<<<<<< HEAD
+    help="Set a custom host-to-IP mapping (host:ip).",
+)
+@click.option(
+    "--target",
+    help="Set the target build stage to build.",
+=======
     help="设置自定义主机到 IP 的映射（host:ip）。",
 )
 @click.option(
     "--target",
     help="设置要构建的目标构建阶段。",
+>>>>>>> origin/refactor/config-system-refactor
 )
 @click.option(
     "-d",
     "--docker-arg",
     "docker_args",
     multiple=True,
+<<<<<<< HEAD
+    help="Set extra options for docker build command.",
+=======
     help="为 docker build 命令设置额外选项。",
+>>>>>>> origin/refactor/config-system-refactor
 )
 @click.pass_obj
 def build(
@@ -197,7 +236,12 @@ def build(
     """
     Build docker images
 
+<<<<<<< HEAD
+    Build the docker images necessary for an Open edX platform. By default, the remote
+    registry cache will be used for better performance.
+=======
     构建 EdOps 平台所需的 docker 镜像。默认情况下，将使用远程仓库缓存以获得更好的性能。
+>>>>>>> origin/refactor/config-system-refactor
     """
     config = tutor_config.load(context.root)
     command_args = []
@@ -264,7 +308,11 @@ def get_image_build_contexts(config: Config) -> dict[str, list[tuple[str, str]]]
     return build_contexts
 
 
+<<<<<<< HEAD
+@click.command(short_help="Pull images from the Docker registry")
+=======
 @click.command(short_help="从 Docker 仓库拉取镜像")
+>>>>>>> origin/refactor/config-system-refactor
 @click.argument("image_names", metavar="image", type=PullImageNameParam(), nargs=-1)
 @click.pass_obj
 def pull(context: Context, image_names: list[str]) -> None:
@@ -274,7 +322,11 @@ def pull(context: Context, image_names: list[str]) -> None:
             images.pull(tag)
 
 
+<<<<<<< HEAD
+@click.command(short_help="Push images to the Docker registry")
+=======
 @click.command(short_help="推送镜像到 Docker 仓库")
+>>>>>>> origin/refactor/config-system-refactor
 @click.argument("image_names", metavar="image", type=PushImageNameParam(), nargs=-1)
 @click.pass_obj
 def push(context: Context, image_names: list[str]) -> None:
@@ -284,7 +336,11 @@ def push(context: Context, image_names: list[str]) -> None:
             images.push(tag)
 
 
+<<<<<<< HEAD
+@click.command(short_help="Print tag associated to a Docker image")
+=======
 @click.command(short_help="打印 Docker 镜像关联的标签")
+>>>>>>> origin/refactor/config-system-refactor
 @click.argument("image_names", metavar="image", type=BuildImageNameParam(), nargs=-1)
 @click.pass_obj
 def printtag(context: Context, image_names: list[str]) -> None:
@@ -343,6 +399,8 @@ class ImageNotFoundError(exceptions.TutorError):
         super().__init__(f"Image '{image_name}' could not be found")
 
 
+<<<<<<< HEAD
+=======
 @click.command(name="list", help="列出 EdOps 模块镜像")
 @click.option(
     "--module",
@@ -466,10 +524,14 @@ def edops_inspect(context: Context, service_name: str, tag: str) -> None:
         fmt.echo_error(f"检查镜像失败: {e}")
 
 
+>>>>>>> origin/refactor/config-system-refactor
 images_command.add_command(build)
 images_command.add_command(pull)
 images_command.add_command(push)
 images_command.add_command(printtag)
+<<<<<<< HEAD
+=======
 images_command.add_command(edops_list)
 images_command.add_command(edops_versions)
 images_command.add_command(edops_inspect)
+>>>>>>> origin/refactor/config-system-refactor

@@ -1,4 +1,7 @@
+<<<<<<< HEAD
+=======
 {% if RUN_OPENEDX -%}
+>>>>>>> origin/refactor/config-system-refactor
 x-openedx-service:
   &openedx-service
   image: {{ DOCKER_IMAGE_OPENEDX_DEV }}
@@ -7,6 +10,14 @@ x-openedx-service:
   volumes:
     # theme files
     - ../build/openedx/themes:/openedx/themes
+<<<<<<< HEAD
+
+services:
+  permissions:
+    environment:
+      OPENEDX_USER_ID: "{{ HOST_USER_ID or 1000 }}"
+
+=======
 {%- endif %}
 
 services:
@@ -17,6 +28,7 @@ services:
     {%- endif %}
 
   {% if RUN_OPENEDX -%}
+>>>>>>> origin/refactor/config-system-refactor
   lms:
     <<: *openedx-service
     command: ./manage.py lms runserver 0.0.0.0:8000
@@ -37,6 +49,8 @@ services:
     ports:
         - "8001:8000"
 
+<<<<<<< HEAD
+=======
   # Additional service for watching theme changes
   watchthemes:
     <<: *openedx-service
@@ -44,6 +58,7 @@ services:
     restart: unless-stopped
   {%- endif %}
 
+>>>>>>> origin/refactor/config-system-refactor
   {% if RUN_MEILISEARCH -%}
   meilisearch:
     ports:
@@ -54,4 +69,13 @@ services:
           - "{{ MEILISEARCH_PUBLIC_URL.split('://')[1] }}"
   {%- endif %}
 
+<<<<<<< HEAD
+  # Additional service for watching theme changes
+  watchthemes:
+    <<: *openedx-service
+    command: npm run watch-sass
+    restart: unless-stopped
+
+=======
+>>>>>>> origin/refactor/config-system-refactor
   {{ patch("local-docker-compose-dev-services")|indent(2) }}
