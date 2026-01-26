@@ -13,7 +13,7 @@ def test_load_modules():
     # Check base module
     base = all_modules["base"]
     assert base.required is True
-    assert base.template == "edops/local/zhjx-base.yml"
+    assert base.template == "local/zhjx-base.yml"
     assert base.target == "local/zhjx-base.yml"
     assert len(base.depends_on) == 0
 
@@ -70,4 +70,3 @@ def test_module_order_resolution():
     # This would require a config, which we don't have in unit tests
     # For now, just test that the function exists
     assert hasattr(modules, "_resolve_module_order")
-
