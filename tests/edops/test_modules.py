@@ -13,7 +13,7 @@ def test_load_modules():
     # Check base module
     base = all_modules["base"]
     assert base.required is True
-    assert base.template == "edops/local/zhjx-base.yml"
+    assert base.template == "local/zhjx-base.yml"
     assert base.target == "local/zhjx-base.yml"
     assert len(base.depends_on) == 0
 
@@ -71,3 +71,19 @@ def test_module_order_resolution():
     # For now, just test that the function exists
     assert hasattr(modules, "_resolve_module_order")
 
+
+def test_get_enabled_module_targets():
+    """Test that the correct module targets are returned."""
+    # 1. Test with only default modules (base, common)
+    config = {"EDOPS_ENABLED_MODULES": []}
+    targets = modules.get_enabled_module_targets(config)
+    assert "local/zhjx-base.yml" in targets
+    assert "local/zhjx-common.yml" in targets
+    assert "local/zhjx-zlmediakit.yml" not in targets
+
+    # 2. Test with an optional module enabled
+    config = {"EDOPS_ENABLED_MODULES": ["zhjx_zlmediakit"]}
+    targets = modules.get_enabled_module_targets(config)
+    assert "local/zhjx-base.yml" in targets
+    assert "local/zhjx-common.yml" in targets
+    assert "local/zhjx-zlmediakit.yml" in targets

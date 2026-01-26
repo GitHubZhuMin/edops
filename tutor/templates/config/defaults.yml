@@ -648,7 +648,7 @@ EDOPS_MQTT_URL: ""
 #   - 仅在启用流媒体功能时需要配置
 #   - 端口号确保不与现有服务冲突
 
-EDOPS_ZLMEDIAKIT_IMAGE: "{{ EDOPS_IMAGE_REGISTRY }}/library/zlmediakit:master"
+EDOPS_ZLMEDIAKIT_IMAGE: "{{ EDOPS_IMAGE_REGISTRY }}/library/zlmediakit/zlmediakit:master-g8a2c28d"
 EDOPS_ZLMEDIAKIT_HOST: "zlmediakit"
 EDOPS_ZLMEDIAKIT_HTTP_PORT: 80
 EDOPS_ZLMEDIAKIT_RTMP_PORT: 1935
