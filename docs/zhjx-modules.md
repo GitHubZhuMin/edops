@@ -33,6 +33,10 @@
 - **关键变量**
   - `MEDIA_CONF_PATH`、`MEDIA_LOG_PATH`、`MEDIA_WEB_PATH`
   - 对外端口（默认 1935/8080/8443/554/10000/UDP 等）
-- **edops 行为**：默认关闭，通过 `edops plugins enable zhjx-zlmediakit` 启用，并在部署前同步证书/配置。
+- **edops 行为**：默认关闭。要启用此模块，请将其添加到 `edops-config.yml` 文件的 `EDOPS_ENABLED_MODULES` 列表中：
+  ```yaml
+  EDOPS_ENABLED_MODULES:
+    - zhjx-zlmediakit
+  ```
 
 > 说明：未来新增 `zhjx-sup`、`zhjx-ilive-ecom` 等模块时，沿用同一格式即可。待 `config/modules.yml` 引入后，edops 将根据 `required`、`depends_on` 属性自动处理部署顺序。
