@@ -327,6 +327,7 @@ MEILISEARCH_INDEX_PREFIX: "tutor_"
 DOCKER_IMAGE_MEILISEARCH: "docker.io/getmeili/meilisearch:v1.8.4"
 MEILISEARCH_MASTER_KEY: "{{ 32|random_string }}"
 MEILISEARCH_API_KEY: "{{ 32|random_string }}"
+MEILISEARCH_API_KEY_UID: "{{ 32|random_string }}"
 
 # SMTP 配置（邮件服务）
 # 作用：提供 Open edX 平台的邮件发送功能
