@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Set
 
 import importlib_resources
 
-from tutor import exceptions, serialize
+from tutor import exceptions, hooks, serialize
 from tutor.types import Config, get_typed
 
 MODULES_CONFIG_PATH = (
@@ -180,3 +180,16 @@ def get_all_enabled_images(config: Config) -> List[tuple[str, ImageDef]]:
         for image in module.images:
             result.append((module.name, image))
     return result
+
+
+@hooks.Actions.CONFIG_LOADED.add()
+def _update_run_flags_from_enabled_modules(config: Config) -> None:
+    """
+    Synchronize legacy RUN_* flags with the new EDOPS_ENABLED_MODULES setting.
+
+    This ensures backward compatibility with scripts that still rely on the old flags.
+    """
+    enabled_modules = get_typed(config, "EDOPS_ENABLED_MODULES", list, [])
+
+    if "zhjx_zlmediakit" in enabled_modules:
+        config["RUN_ZHJX_ZLMEDIAKIT"] = True

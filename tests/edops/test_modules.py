@@ -87,3 +87,16 @@ def test_get_enabled_module_targets():
     assert "local/zhjx-base.yml" in targets
     assert "local/zhjx-common.yml" in targets
     assert "local/zhjx-zlmediakit.yml" in targets
+
+
+def test_run_flag_synchronization():
+    """Test that legacy RUN_* flags are synchronized with EDOPS_ENABLED_MODULES."""
+    # 1. Test that the flag is not set by default
+    config = {"EDOPS_ENABLED_MODULES": []}
+    modules._update_run_flags_from_enabled_modules(config)
+    assert config.get("RUN_ZHJX_ZLMEDIAKIT") is None
+
+    # 2. Test that the flag is set when the module is enabled
+    config = {"EDOPS_ENABLED_MODULES": ["zhjx_zlmediakit"]}
+    modules._update_run_flags_from_enabled_modules(config)
+    assert config["RUN_ZHJX_ZLMEDIAKIT"] is True
