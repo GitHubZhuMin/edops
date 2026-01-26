@@ -324,6 +324,9 @@ MEILISEARCH_HOST: "meilisearch.{{ LMS_HOST }}"
 MEILISEARCH_URL: "http://meilisearch:7700"
 MEILISEARCH_PUBLIC_URL: "{% if ENABLE_HTTPS %}https{% else %}http{% endif %}://{{ MEILISEARCH_HOST }}"
 MEILISEARCH_INDEX_PREFIX: "tutor_"
+MEILISEARCH_MASTER_KEY: "{{ 24|random_string }}"
+MEILISEARCH_API_KEY_UID: "{{ 4|uuid }}"
+MEILISEARCH_API_KEY: "{{ MEILISEARCH_MASTER_KEY|uid_master_hash(MEILISEARCH_API_KEY_UID) }}"
 DOCKER_IMAGE_MEILISEARCH: "docker.io/getmeili/meilisearch:v1.8.4"
 
 # SMTP 配置（邮件服务）
