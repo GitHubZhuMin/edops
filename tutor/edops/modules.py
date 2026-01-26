@@ -183,13 +183,22 @@ def get_all_enabled_images(config: Config) -> List[tuple[str, ImageDef]]:
 
 
 @hooks.Actions.CONFIG_LOADED.add()
-def _update_run_flags_from_enabled_modules(config: Config) -> None:
+def _synchronize_module_flags(config: Config) -> None:
     """
-    Synchronize legacy RUN_* flags with the new EDOPS_ENABLED_MODULES setting.
+    Synchronize legacy RUN_* flags and the EDOPS_ENABLED_MODULES setting.
 
-    This ensures backward compatibility with scripts that still rely on the old flags.
+    This ensures backward and forward compatibility, making EDOPS_ENABLED_MODULES
+    the single source of truth.
     """
     enabled_modules = get_typed(config, "EDOPS_ENABLED_MODULES", list, [])
 
+    # Sync from legacy RUN_* flags to EDOPS_ENABLED_MODULES
+    if config.get("RUN_ZHJX_ZLMEDIAKIT") and "zhjx_zlmediakit" not in enabled_modules:
+        enabled_modules.append("zhjx_zlmediakit")
+
+    # Sync from EDOPS_ENABLED_MODULES to legacy RUN_* flags
     if "zhjx_zlmediakit" in enabled_modules:
         config["RUN_ZHJX_ZLMEDIAKIT"] = True
+
+    # Update the config with the potentially modified list
+    config["EDOPS_ENABLED_MODULES"] = enabled_modules

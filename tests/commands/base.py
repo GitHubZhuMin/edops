@@ -27,16 +27,14 @@ class TestCommandMixin:
                 result1 = self.invoke_in_root(root, ...)
                 result2 = self.invoke_in_root(root, ...)
         """
-        runner_kwargs = {
-            "env": {
+        runner = click.testing.CliRunner(
+            env={
                 "TUTOR_ROOT": root,
                 "TUTOR_IGNORE_ENTRYPOINT_PLUGINS": "1",
                 "TUTOR_IGNORE_DICT_PLUGINS": "1",
-            }
-        }
-        if "mix_stderr" in click.testing.CliRunner.__init__.__code__.co_varnames:
-            runner_kwargs["mix_stderr"] = False
-        runner = click.testing.CliRunner(**runner_kwargs)
+            },
+            mix_stderr=False,
+        )
         return runner.invoke(
             cli, args, obj=TestContext(root), catch_exceptions=catch_exceptions
         )

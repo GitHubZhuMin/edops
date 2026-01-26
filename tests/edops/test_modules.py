@@ -89,14 +89,27 @@ def test_get_enabled_module_targets():
     assert "local/zhjx-zlmediakit.yml" in targets
 
 
-def test_run_flag_synchronization():
-    """Test that legacy RUN_* flags are synchronized with EDOPS_ENABLED_MODULES."""
-    # 1. Test that the flag is not set by default
-    config = {"EDOPS_ENABLED_MODULES": []}
-    modules._update_run_flags_from_enabled_modules(config)
-    assert config.get("RUN_ZHJX_ZLMEDIAKIT") is None
-
-    # 2. Test that the flag is set when the module is enabled
+def test_module_flag_synchronization():
+    """Test the bidirectional synchronization of module flags."""
+    # Test case 1: EDOPS_ENABLED_MODULES enables the module
     config = {"EDOPS_ENABLED_MODULES": ["zhjx_zlmediakit"]}
-    modules._update_run_flags_from_enabled_modules(config)
+    modules._synchronize_module_flags(config)
     assert config["RUN_ZHJX_ZLMEDIAKIT"] is True
+    assert "zhjx_zlmediakit" in config["EDOPS_ENABLED_MODULES"]
+
+    # Test case 2: Legacy RUN_ flag enables the module
+    config = {"RUN_ZHJX_ZLMEDIAKIT": True, "EDOPS_ENABLED_MODULES": []}
+    modules._synchronize_module_flags(config)
+    assert config["RUN_ZHJX_ZLMEDIAKIT"] is True
+    assert "zhjx_zlmediakit" in config["EDOPS_ENABLED_MODULES"]
+
+    # Test case 3: Both are set, should remain consistent
+    config = {"RUN_ZHJX_ZLMEDIAKIT": True, "EDOPS_ENABLED_MODULES": ["zhjx_zlmediakit"]}
+    modules._synchronize_module_flags(config)
+    assert config["RUN_ZHJX_ZLMEDIAKIT"] is True
+    assert "zhjx_zlmediakit" in config["EDOPS_ENABLED_MODULES"]
+
+    # Test case 4: Module is disabled
+    config = {"EDOPS_ENABLED_MODULES": []}
+    modules._synchronize_module_flags(config)
+    assert "RUN_ZHJX_ZLMEDIAKIT" not in config

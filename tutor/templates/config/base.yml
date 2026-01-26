@@ -1,12 +1,8 @@
 ---
 # EdOps 基础配置变量（随机生成的安全值）
-ID: "{{ 8|random_string }}"
-MYSQL_ROOT_PASSWORD: "{{ 8|random_string }}"
-RABBITMQ_DEFAULT_PASS: "{{ 12|random_string }}"
-MINIO_ROOT_PASSWORD: "{{ 12|random_string }}"
-EDOPS_MYSQL_ROOT_PASSWORD: "{{ MYSQL_ROOT_PASSWORD }}"
-EDOPS_RABBITMQ_DEFAULT_PASS: "{{ RABBITMQ_DEFAULT_PASS }}"
-EDOPS_MINIO_ROOT_PASSWORD: "{{ MINIO_ROOT_PASSWORD }}"
+EDOPS_MYSQL_ROOT_PASSWORD: "{{ 12|random_string }}"
+EDOPS_RABBITMQ_DEFAULT_PASS: "{{ 12|random_string }}"
+EDOPS_MINIO_ROOT_PASSWORD: "{{ 12|random_string }}"
 EDOPS_ISPOT_APP_SOURCE: "{{ 64|random_string }}"
 
 # Nacos 基础配置变量（随机生成的安全值）
