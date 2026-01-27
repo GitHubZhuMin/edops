@@ -1,30 +1,30 @@
-# EdOps: A Unified Deployment CLI for ZHJX Systems
+# EdOps：面向 zhjx 体系的统一部署 CLI
 
-## What is EdOps?
+## EdOps 是什么？
 
-EdOps is a command-line interface (CLI) tool designed to standardize the deployment and configuration of the ZHJX family of business systems. It is a fork of the powerful [Tutor](https://github.com/overhangio/tutor) framework, inheriting its robust architecture based on template rendering, Docker Compose, and a modular plugin system.
+EdOps 是一款命令行界面（CLI）工具，旨在为 zhjx 系列业务系统提供标准化的部署与配置方案。它是强大的 [Tutor](https://github.com/overhangio/tutor) 框架的一个分支，继承了其基于模板渲染、Docker Compose 和模块化插件系统的稳健架构。
 
-While Tutor is primarily focused on deploying Open edX, EdOps is tailored specifically for the needs of ZHJX, providing a consistent workflow for managing environments from local development to production clusters.
+Tutor 主要专注于部署 Open edX，而 EdOps 则专门针对 zhjx 的需求进行了定制，为管理从本地开发到生产集群的各种环境提供了统一的工作流。
 
-## Core Concepts
+## 核心概念
 
-### 1. A Deployment Framework, Not a Business System
+### 1. 部署框架，而非业务系统
 
-The most important thing to understand about EdOps is its role: it is a **deployment and configuration tool**. It does not contain business logic itself. Instead, it provides the scaffolding to deploy and manage other applications, ensuring that they are configured and launched in a consistent and reproducible way.
+理解 EdOps 的关键在于其定位：它是一个**部署与配置工具**。它本身不包含任何业务逻辑，而是提供了一套脚手架，用于部署和管理其他应用，确保它们以一致且可复现的方式进行配置和启动。
 
-### 2. Modular Architecture
+### 2. 模块化架构
 
-EdOps uses a modular architecture to manage different components of the ZHJX system. This architecture is organized in a clear hierarchy:
+EdOps 采用模块化架构来管理 zhjx 系统的不同组件。该架构层次清晰：
 
-- **`base` Module:** This module is always enabled and provides the core infrastructure services that all other modules depend on. This includes services like Nacos, MySQL, Minio, Redis, and message queues.
-- **`common` Module:** Also always enabled, this module provides the shared services that are common across all ZHJX business systems. This typically includes user management, authentication, a backend admin panel, and an API gateway.
-- **`zhjx-*` Modules:** These are the optional business modules that provide specific functionalities, such as `zhjx-zlmediakit` for media streaming. Each of these modules can be enabled or disabled based on the needs of a particular deployment.
+- **`base` 模块：** 此模块始终启用，提供所有其他模块所依赖的核心基础设施服务，如 Nacos、MySQL、Minio、Redis 和消息队列。
+- **`common` 模块：** 此模块也始终启用，提供 zhjx 所有业务系统共享的通用服务，通常包括用户管理、认证、后台管理面板和 API 网关。
+- **`zhjx-*` 模块：** 这些是可选的业务模块，提供特定功能，例如用于媒体流处理的 `zhjx-zlmediakit`。可以根据具体部署需求启用或禁用这些模块。
 
-### 3. Centralized Configuration
+### 3. 集中化配置
 
-All configuration for an EdOps deployment is managed through a single `edops-config.yml` file. This file controls everything from image versions and domain names to database credentials. This centralized approach allows for easy environment replication and auditing.
+EdOps 部署的所有配置都通过单一的 `edops-config.yml` 文件进行管理。该文件控制着从镜像版本、域名到数据库凭据的所有内容。这种集中化的方法使得环境复制和审计变得简单。
 
-To enable or disable `zhjx-*` modules, you use the `EDOPS_ENABLED_MODULES` setting in your configuration file. For example:
+要启用或禁用 `zhjx-*` 模块，您需要在配置文件中使用 `EDOPS_ENABLED_MODULES` 设置。例如：
 
 ```yaml
 EDOPS_ENABLED_MODULES:
@@ -32,58 +32,58 @@ EDOPS_ENABLED_MODULES:
   - zhjx-another-module
 ```
 
-The `base` and `common` modules are always enabled and do not need to be listed here.
+`base` 和 `common` 模块始终处于启用状态，无需在此处列出。
 
-### 4. Consistent Environments
+### 4. 环境一致性
 
-EdOps inherits Tutor's support for multiple deployment environments, ensuring that the behavior of your applications is consistent whether you are running them on your local machine for development, on a single server, or in a Kubernetes cluster.
+EdOps 继承了 Tutor 对多部署环境的支持，确保您的应用无论是在本地开发、单机服务器还是 Kubernetes 集群上，其行为都保持一致。
 
-- **`dev`:** For local development, with support for hot-reloading and easy debugging.
-- **`local`:** For single-server production deployments, using Docker Compose.
-- **`k8s`:** For multi-node, scalable deployments on Kubernetes.
+- **`dev`：** 用于本地开发，支持热重载和便捷调试。
+- **`local`：** 用于单机生产部署，使用 Docker Compose。
+- **`k8s`：** 用于在 Kubernetes 上的多节点、可扩展部署。
 
-## Quickstart
+## 快速入门
 
-1.  **Clone the repository:**
+1.  **克隆仓库：**
     ```bash
     git clone https://your-repo-url/edops.git
     cd edops
     ```
 
-2.  **Create and activate a virtual environment:**
+2.  **创建并激活虚拟环境：**
     ```bash
     python3 -m venv venv
     source venv/bin/activate
     ```
 
-3.  **Install EdOps in editable mode:**
+3.  **以可编辑模式安装 EdOps：**
     ```bash
     pip install -e .
     ```
 
-4.  **Initialize your configuration:**
+4.  **初始化配置：**
     ```bash
     edops config save --interactive
     ```
-    This will walk you through the initial setup and create your `edops-config.yml` file.
+    此命令将引导您完成初始设置并创建 `edops-config.yml` 文件。
 
-5.  **Launch the platform:**
+5.  **启动平台：**
     ```bash
     edops local launch
     ```
 
-For more detailed instructions, please refer to the [QUICKSTART_CN.md](QUICKSTART_CN.md) guide.
+更详细的说明，请参阅 [QUICKSTART_CN.md](QUICKSTART_CN.md) 指南。
 
-## For Developers and Contributors
+## 致开发者和贡献者
 
-This repository is managed with the help of AI agents. To ensure smooth collaboration, please read the [agents.md](agents.md) file, which contains important guidelines for the AI on how to interact with this codebase.
+本仓库在 AI Agent 的协助下进行管理。为确保顺畅协作，请阅读 [agents.md](agents.md) 文件，其中包含了 AI 在与此代码库互动时需遵循的重要准则。
 
-## Further Reading
+## 进一步阅读
 
-- **Quickstart:** [QUICKSTART_CN.md](QUICKSTART_CN.md) - A 5-minute guide to get started.
-- **Reference:**
-  - [CLI Reference](docs/edops-cli.md) - A complete reference manual for the CLI.
-  - [Design Decisions](docs/DESIGN_DECISIONS_CN.md) - Core design decisions and technical consensus.
-  - [Module Guide](docs/zhjx-modules.md) - Descriptions and configuration for modules.
-- **Reports:**
-  - [Reports Archive](docs/reports/) - Implementation reports, bug fix records, and test guides.
+- **快速上手:** [QUICKSTART_CN.md](QUICKSTART_CN.md) - 5 分钟快速入门指南。
+- **参考文档:**
+  - [CLI 参考](docs/edops-cli.md) - 完整的 CLI 命令参考手册。
+  - [设计决策](docs/DESIGN_DECISIONS_CN.md) - 核心设计决策与技术共识。
+  - [模块指南](docs/zhjx-modules.md) - 模块说明与配置。
+- **报告:**
+  - [报告归档](docs/reports/) - 实施报告、错误修复记录和测试指南。

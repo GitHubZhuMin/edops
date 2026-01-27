@@ -1,37 +1,37 @@
 # AGENTS.md
 
-## Repository Expectations
+## 仓库期望
 
-This document provides guidelines for AI agents working in the `edops` repository. Adhering to these rules is crucial for maintaining code quality, stability, and a clear architectural vision.
+本文件为在 `edops` 仓库中工作的 AI Agent 提供指导方针。遵守这些规则对于维护代码质量、稳定性以及清晰的架构愿景至关重要。
 
-### Core Principles
+### 核心原则
 
-- **`edops` is a unified deployment CLI, not a business application.** Its primary role is to provide a consistent deployment and configuration framework based on Tutor. All modifications must reinforce this identity.
-- **Modularity is key.** The system is designed with a clear hierarchy: `base` provides fundamental infrastructure, `common` offers shared services, and `zhjx-*` modules contain specific business logic. Respect this separation.
-- **Backward compatibility is a priority.** Legacy configurations (e.g., `RUN_*` flags) are maintained for a transition period but are not the source of truth. The `EDOPS_ENABLED_MODULES` setting is the definitive configuration driver.
+- **`edops` 是一个统一部署 CLI，而非业务应用。** 其主要职责是提供一个基于 Tutor 的一致性部署与配置框架。所有修改必须强化此定位。
+- **模块化是关键。** 系统设计遵循清晰的层次结构：`base` 提供基础设施，`common` 提供共享服务，`zhjx-*` 模块包含具体的业务逻辑。请尊重这种分离。
+- **向后兼容是优先事项。** 旧版配置（如 `RUN_*` 标志）为过渡期保留，但并非唯一事实来源。`EDOPS_ENABLED_MODULES` 设置是最终的配置驱动。
 
-## Agent Responsibilities
+## Agent 职责
 
-### Module Governance
+### 模块治理
 
-- **`base` and `common` are foundational.** Do not add business-specific logic to these modules. They should remain generic and reusable.
-- **Business logic belongs in `zhjx-*` modules.** When adding new features, create or extend a `zhjx-*` module.
-- **Module dependencies must be explicit.** A `zhjx-*` module should depend on `common` and `base`, but not on other `zhjx-*` modules unless explicitly approved.
+- **`base` 和 `common` 是基础。** 不要在这些模块中添加业务特定逻辑。它们应保持通用和可复用。
+- **业务逻辑应位于 `zhjx-*` 模块中。** 在添加新功能时，应创建或扩展一个 `zhjx-*` 模块。
+- **模块依赖必须明确。** 一个 `zhjx-*` 模块应依赖 `common` 和 `base`，但不应依赖其他 `zhjx-*` 模块，除非得到明确批准。
 
-### Prohibited Actions
+### 禁止行为
 
-- **Do not alter the upstream Tutor structure.** The `tutor/` directory is named to maintain compatibility with the original Tutor framework. Do not rename it or fundamentally change its internal structure.
-- **Do not modify Open edX deployment paths.** `edops` is designed to coexist with and manage Open edX, not to alter its core deployment mechanisms. Any changes that could break compatibility with upstream Open edX are forbidden.
-- **Do not introduce new core configuration mechanisms.** All module enablement and configuration should be managed through `EDOPS_ENABLED_MODULES` and the existing `edops-config.yml` system. Avoid creating new, parallel configuration systems.
+- **不要改变上游 Tutor 的结构。** `tutor/` 目录的命名是为了保持与原始 Tutor 框架的兼容性。请勿重命名或从根本上改变其内部结构。
+- **不要修改 Open edX 的部署路径。** `edops` 旨在与 Open edX 共存并管理之，而非改变其核心部署机制。任何可能破坏与上游 Open edX 兼容性的更改都是禁止的。
+- **不要引入新的核心配置机制。** 所有模块的启用和配置都应通过 `EDOPS_ENABLED_MODULES` 和现有的 `edops-config.yml` 系统进行管理。避免创建新的、并行的配置系统。
 
-### Handling Legacy Code
+### 处理旧版代码
 
-- **Treat `RUN_*` flags as a compatibility layer.** When encountering `RUN_*` flags in the code, understand that they are synchronized with `EDOPS_ENABLED_MODULES`. The modern `EDOPS_ENABLED_MODULES` is the single source of truth.
-- **Do not extend legacy systems.** When implementing new features, do not add new `RUN_*` flags. Use the `EDOPS_ENABLED_MODULES` list.
-- **Prioritize `EDOPS_ENABLED_MODULES` in logic.** When reading configuration, your code should prefer `EDOPS_ENABLED_MODULES`.
+- **将 `RUN_*` 标志视为兼容层。** 在代码中遇到 `RUN_*` 标志时，应理解它们与 `EDOPS_ENABLED_MODULES` 是同步的。现代的 `EDOPS_ENABLED_MODULES` 是唯一的事实来源。
+- **不要扩展旧有系统。** 在实现新功能时，不要添加新的 `RUN_*` 标志，而应使用 `EDOPS_ENABLED_MODULES` 列表。
+- **在逻辑中优先使用 `EDOPS_ENABLED_MODULES`。** 读取配置时，您的代码应首选 `EDOPS_ENABLED_MODULES`。
 
-## Safety and Verification
+## 安全与验证
 
-- **Always run tests.** After making any changes to Python code, run the relevant tests using `python -m pytest tests/`.
-- **Verify template rendering.** If you modify any templates in `tutor/templates/`, use `edops config render <module-name>` to ensure your changes render correctly.
-- **Ask for clarification.** If a task seems to conflict with these guidelines or the project's architecture, ask for confirmation before proceeding.
+- **始终运行测试。** 在对 Python 代码进行任何更改后，使用 `python -m pytest tests/` 运行相关测试。
+- **验证模板渲染。** 如果您修改了 `tutor/templates/` 中的任何模板，请使用 `edops config render <module-name>` 以确保您的更改能够正确渲染。
+- **请求澄清。** 如果一项任务似乎与这些指导方针或项目架构冲突，请在继续之前请求确认。
