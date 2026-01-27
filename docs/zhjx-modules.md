@@ -33,7 +33,7 @@
 - **关键变量**
   - `MEDIA_CONF_PATH`、`MEDIA_LOG_PATH`、`MEDIA_WEB_PATH`
   - 对外端口（默认 1935/8080/8443/554/10000/UDP 等）
-- **edops 行为**：默认关闭。要启用此模块，请将其添加到 `edops-config.yml` 文件的 `EDOPS_ENABLED_MODULES` 列表中：
+- **edops 行为**：默认关闭。要启用此模块，请将其添加到 `config.yml` 文件的 `EDOPS_ENABLED_MODULES` 列表中：
   ```yaml
   EDOPS_ENABLED_MODULES:
     - zhjx-zlmediakit
