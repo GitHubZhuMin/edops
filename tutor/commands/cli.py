@@ -4,6 +4,8 @@ import sys
 import typing as t
 
 import appdirs
+import os
+
 import click
 
 from tutor import exceptions, fmt, hooks, utils
@@ -103,7 +105,7 @@ class TutorCli(click.Group):
 )
 @click.pass_context
 def cli(context: click.Context, root: str, show_help: bool) -> None:
-    if utils.is_root():
+    if utils.is_root() and not os.environ.get("TUTOR_IGNORE_ROOT_WARNING"):
         fmt.echo_alert(
             "您正在以 root 用户运行 EdOps。强烈不建议这样做。如果是为了访问 Docker 守护进程，"
             "应该将您的用户添加到 'docker' 组。（参见 https://docs.docker.com"

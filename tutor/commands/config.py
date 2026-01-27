@@ -304,7 +304,10 @@ def save(
     
     # Validate required configuration items before saving
     if not env_only:
-        _validate_required_config(config)
+        validation_config = dict(config)
+        tutor_config.update_with_defaults(validation_config)
+        tutor_config.render_full(validation_config)
+        _validate_required_config(validation_config)
     
     # Create data/ subdirectories to ensure they exist before permissions service runs
     if not env_only:

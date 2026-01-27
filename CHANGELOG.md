@@ -20,6 +20,67 @@ instructions, because git commits are used to generate release notes:
 
 <!-- scriv-insert-here -->
 
+<a id='changelog-21.0.0'></a>
+## v21.0.0 (2026-01-07)
+
+- [Improvement] Use [`uv`](https://github.com/astral-sh/uv) as a replacement for
+  pip for installing and resolving packages. uv provides a faster package
+  resolution and installation steps, reducing the python-requirements layer
+  build time by about ~2-5x.
+
+  For the most part uv is a drop-in replacement for main pip functionality with
+  the exception of VCS editable requirements. The main use of VCS editable
+  requirements is to copy all the files in the VCS repository when installing
+  the package. This can be avoided by making proper use of a `MANIFEST.in` file.
+  It's possible to also use the `PIP_COMMAND=pip` build argument to keep using
+  pip.
+
+- 💥[Deprecation] Remove preview page configuration as the page has been migrated to the learning MFE. (by @Danyal-Faheem)
+
+💥[Deprecation] Remove deprecated WebUI plugin in favor of Tutor Deck. (by @Abdul-Muqadim-Arbisoft)
+
+💥[Feature] Upgrade to Ulmo. (by @ahmed-arb)
+
+- [Feature] Add authorization policy loading functionality to LMS/CMS services. (by @mariajgrimaldi)
+
+- 💥[Improvement] Replacing "patchesStrategicMerge" key with "patches" key in the main Kustomization file (by @jfavellar90). [patchesStrategicMerge](https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/patchesstrategicmerge/) was deprecated in the release v5.0.0 of the Kustomization API. It is replaced by the [patches](https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/patches/) key which is more powerful and allows defining different patch types. This has the following consequences:
+    - The patch "kustomization-patches-strategic-merge" was renamed to "kustomization-patches"
+    - Extra Kustomization patches added via the "kustomization-patches" Tutor patch must respect the format specified [here](https://kubectl.docs.kubernetes.io/references/kustomize/kustomization/patches/). It implies moving old "patchesStrategicMerge" extra patches to the "patches" format.
+
+- [Feature] Add tutor livedeps to the list of plugins available by default. (by @mlabeeb03)
+
+- [Bugfix] Add correct EVENT_BUS_REDIS_CONNECTION_URL settings for event-bus. (by @Faraz32123)
+
+- [Bugfix] Update Node.js to version 24. Python remains at 3.11 as upstream edx-platform does not fully support it yet.
+
+<a id='changelog-20.0.5'></a>
+## v20.0.5 (2026-01-07)
+
+- [Bugfix] Fix duplicate volume mounts error caused by same repo/package name(e.g. openedx-scorm-xblock) matching multiple expressions(("openedx", r".*[xX][bB]lock.*"), ("openedx", r"openedx-.*")) in MOUNTED_DIRECTORIES. (by @Faraz32123)
+
+- [BugFix] Update MongoDB to v7.0.28, resolving a critical upstream security issue https://jira.mongodb.org/browse/SERVER-115508. (by @Faraz32123)
+
+<a id='changelog-20.0.4'></a>
+## v20.0.4 (2025-12-22)
+
+- [Chore] Update hatch definition for version. (by @mlabeeb03)
+
+- [Improvement] Add ability to not delete namespace while running `tutor k8s delete` command. (by @mlabeeb03)
+
+- [Security] Add upstream security fix as patch in Open edX image (by @ahmed-arb)
+
+[Security] Bump urllib3 from 2.5.0 to 2.6.0 to address Dependabot alerts.
+
+<a id='changelog-20.0.3'></a>
+## v20.0.3 (2025-12-03)
+
+- [Bugfix] Fix packaging issue where a stray `venv/` directory was included in the source distribution (sdist)
+for previous releases. The build configuration now correctly excludes the `venv/` folder from package archives. (by @ahmed-arb)
+
+- [Feature] Add tutor livedeps to the list of plugins available by default. (by @mlabeeb03)
+
+- [Feature] Update OPENEDX_COMMON_VERSION to teak.3 tag (by @ahmed-arb)
+
 <a id='changelog-20.0.2'></a>
 ## v20.0.2 (2025-10-20)
 

@@ -75,7 +75,7 @@ This configuration parameter defines which Caddy Docker image to use.
 
 This configuration parameter defines which Meilisearch Docker image to use.
 
-- ``DOCKER_IMAGE_MONGODB`` (default: ``"docker.io/mongo:7.0.7"``)
+- ``DOCKER_IMAGE_MONGODB`` (default: ``"docker.io/mongo:7.0.28"``)
 
 This configuration parameter defines which MongoDB Docker image to use.
 
@@ -132,7 +132,7 @@ Open edX customisation
 
 This defines the git repository from which you install Open edX platform code. If you run an Open edX fork with custom patches, set this to your own git repository. You may also override this configuration parameter at build time, by providing a ``--build-arg`` option.
 
-- ``OPENEDX_COMMON_VERSION`` (default: ``"release/teak.2"``, or ``master`` in :ref:`Tutor Main <main>`)
+- ``OPENEDX_COMMON_VERSION`` (default: ``"release/ulmo.1"``, or ``master`` in :ref:`Tutor Main <main>`)
 
 This defines the default version that will be pulled from all Open edX git repositories.
 
@@ -292,7 +292,6 @@ When ``ENABLE_HTTPS`` is ``true``, the whole Open edX platform will be reconfigu
 The following DNS records must exist and point to your server::
 
     LMS_HOST (e.g: myopenedx.com)
-    PREVIEW_LMS_HOST (e.g: preview.myopenedx.com)
     CMS_HOST (e.g: studio.myopenedx.com)
 
 Thus, **this feature will (probably) not work in development** because the DNS records will (probably) not point to your development machine.
@@ -320,6 +319,33 @@ This configuration parameter sets the Contact Email.
 - ``PLATFORM_NAME`` (default: ``"My Open edX"``)
 
 This configuration parameter sets the Platform Name.
+
+SITE_ID and email branding
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We do **not** override ``SITE_ID`` during initial Tutor setup.
+
+Leaving ``SITE_ID`` unset allows Django to create sites correctly:
+
+- ``example.com`` → ``id = 1``
+- LMS site → ``id = 2``
+
+Overriding ``SITE_ID`` too early may result in the LMS site using ``id = 3`` and
+``example.com`` using ``id = 2``.
+
+When to set SITE_ID
+*******************
+
+For features that rely on site context (for example bulk emails or other
+personalized emails), explicitly set::
+
+    SITE_ID = 2
+
+Add this setting in the ``openedx-common-settings`` patch::
+
+    patches:
+      openedx-common-settings: |
+        SITE_ID = 2
 
 Custom Open edX docker image
 ----------------------------
@@ -384,9 +410,9 @@ Note that your edx-platform version must be a fork of the latest release **tag**
 
 If you don't create your fork from this tag, you *will* have important compatibility issues with other services. In particular:
 
-- Do not try to run a fork from an older (pre-Teak) version of edx-platform: this will simply not work.
+- Do not try to run a fork from an older (pre-Ulmo) version of edx-platform: this will simply not work.
 - Do not try to run a fork from the edx-platform master branch: there is a 99% probability that it will fail.
-- Do not try to run a fork from the release/teak branch: Tutor will attempt to apply security and bug fix patches that might already be included in the release/teak but which were not yet applied to the latest release tag. Patch application will thus fail if you base your fork from the release/teak branch.
+- Do not try to run a fork from the release/ulmo branch: Tutor will attempt to apply security and bug fix patches that might already be included in the release/ulmo but which were not yet applied to the latest release tag. Patch application will thus fail if you base your fork from the release/ulmo branch.
 
 .. _i18n:
 

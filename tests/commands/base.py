@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import inspect
+
 import click.testing
 
 from tests.helpers import TestContext, temporary_root
+from tutor.commands import compose
 from tutor.commands.cli import cli
 
 
@@ -27,14 +30,24 @@ class TestCommandMixin:
                 result1 = self.invoke_in_root(root, ...)
                 result2 = self.invoke_in_root(root, ...)
         """
-        runner = click.testing.CliRunner(
-            env={
+        compose.ComposeTaskRunner.HOOK_FIRED = True
+        runner_kwargs = {
+            "env": {
                 "TUTOR_ROOT": root,
                 "TUTOR_IGNORE_ENTRYPOINT_PLUGINS": "1",
                 "TUTOR_IGNORE_DICT_PLUGINS": "1",
-            },
-            mix_stderr=False,
-        )
+                # Disable plugin auto-loading and root warnings during tests
+                "TUTOR_PLUGINS": "[]",
+                "TUTOR_IGNORE_ROOT_WARNING": "1",
+            }
+        }
+        if "mix_stderr" in inspect.signature(click.testing.CliRunner).parameters:
+            runner_kwargs["mix_stderr"] = False
+        runner = click.testing.CliRunner(**runner_kwargs)
         return runner.invoke(
-            cli, args, obj=TestContext(root), catch_exceptions=catch_exceptions
+            cli,
+            args,
+            obj=TestContext(root),
+            catch_exceptions=catch_exceptions,
+            input="\n" * 50,
         )
