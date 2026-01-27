@@ -183,6 +183,7 @@ rsa==4.9.1
     # via
     #   -r base.txt
     #   google-auth
+pytest==9.0.2
 ruff==0.14.0
     # via -r dev.in
 scriv==1.7.0

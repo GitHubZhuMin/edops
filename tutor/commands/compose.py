@@ -114,12 +114,19 @@ class BaseComposeContext(BaseTaskContext):
 @click.option("-I", "--non-interactive", is_flag=True, help="非交互式运行")
 @click.option("-p", "--pullimages", is_flag=True, help="更新 docker 镜像")
 @click.option("--skip-build", is_flag=True, help="跳过构建 Docker 镜像")
+@click.option(
+    "--no-health-check",
+    "no_health_check",
+    is_flag=True,
+    help="跳过部署后的健康检查",
+)
 @click.pass_context
 def launch(
     context: click.Context,
     non_interactive: bool,
     pullimages: bool,
     skip_build: bool,
+    no_health_check: bool,
 ) -> None:
     context_name = context.obj.NAME
     run_for_prod = False if context_name == "dev" else None
@@ -153,6 +160,16 @@ def launch(
 
     click.echo(fmt.title("创建数据库并执行迁移"))
     context.invoke(do.commands["init"])
+
+    # 运行健康检查
+    if not no_health_check:
+        from tutor.edops import modules as edops_modules
+        enabled_modules = edops_modules.get_enabled_modules(config)
+        if enabled_modules:
+            click.echo(fmt.title("运行健康检查"))
+            from tutor.commands.local import healthcheck
+
+            context.invoke(healthcheck)
 
     # 打印面向用户的应用 URL
     public_app_hosts = ""
