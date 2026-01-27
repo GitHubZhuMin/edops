@@ -57,6 +57,9 @@ def upgrade_from(context: click.Context, from_release: str) -> None:
     if running_release == "sumac":
         running_release = "teak"
 
+    if running_release == "teak":
+        running_release = "ulmo"
+
 
 def upgrade_from_ironwood(context: click.Context, config: Config) -> None:
     click.echo(fmt.title("Upgrading from Ironwood"))
@@ -227,7 +230,7 @@ def upgrade_from_quince(context: click.Context, config: Config) -> None:
     click.echo(fmt.title("Upgrading from Quince"))
     upgrade_mongodb(context, config, "5.0.26", "5.0")
     upgrade_mongodb(context, config, "6.0.14", "6.0")
-    upgrade_mongodb(context, config, "7.0.7", "7.0")
+    upgrade_mongodb(context, config, "7.0.28", "7.0")
 
 
 def upgrade_mongodb(

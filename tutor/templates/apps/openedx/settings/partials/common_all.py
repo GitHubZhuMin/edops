@@ -86,9 +86,6 @@ CACHES = {
     }
 }
 
-# The default Django contrib site is the one associated to the LMS domain name. 1 is
-# usually "example.com", so it's the next available integer.
-SITE_ID = 2
 
 # Contact addresses
 CONTACT_MAILING_ADDRESS = "{{ PLATFORM_NAME }} - {% if ENABLE_HTTPS %}https{% else %}http{% endif %}://{{ LMS_HOST }}"
@@ -153,13 +150,16 @@ LOGGING["loggers"]["blockstore.apps.bundles.storage"] = {"handlers": ["console"]
 import warnings
 
 # REMOVE-AFTER-V20: check if we can remove these lines after upgrade.
-from django.utils.deprecation import RemovedInDjango50Warning, RemovedInDjango51Warning
-# RemovedInDjango5xWarning: 'xxx' is deprecated. Use 'yyy' in 'zzz' instead.
-warnings.filterwarnings("ignore", category=RemovedInDjango50Warning)
-warnings.filterwarnings("ignore", category=RemovedInDjango51Warning)
-# DeprecationWarning: 'imghdr' is deprecated and slated for removal in Python 3.13
-warnings.filterwarnings("ignore", category=DeprecationWarning, module="pgpy.constants")
-
+try:
+    from django.utils.deprecation import RemovedInDjango50Warning, RemovedInDjango51Warning
+    # RemovedInDjango5xWarning: 'xxx' is deprecated. Use 'yyy' in 'zzz' instead.
+    warnings.filterwarnings("ignore", category=RemovedInDjango50Warning)
+    warnings.filterwarnings("ignore", category=RemovedInDjango51Warning)
+    # DeprecationWarning: 'imghdr' is deprecated and slated for removal in Python 3.13
+    warnings.filterwarnings("ignore", category=DeprecationWarning, module="pgpy.constants")
+except ImportError:
+    pass # If the warnings don't exist we don't need to filter them.
+    
 # Email
 EMAIL_USE_SSL = {{ SMTP_USE_SSL }}
 # Forward all emails from edX's Automated Communication Engine (ACE) to django.
@@ -245,6 +245,12 @@ OPENEDX_LEARNING = {
         }
     }
 }
+
+# edx-event-bus-redis settings
+EVENT_BUS_PRODUCER = 'edx_event_bus_redis.create_producer'
+EVENT_BUS_REDIS_CONNECTION_URL = 'redis://@redis:6379/'
+EVENT_BUS_TOPIC_PREFIX = 'dev'
+EVENT_BUS_CONSUMER = 'edx_event_bus_redis.RedisEventConsumer'
 
 {{ patch("openedx-common-settings") }}
 ######## End of settings common to LMS and CMS

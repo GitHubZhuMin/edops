@@ -71,28 +71,28 @@ def _add_core_init_tasks() -> None:
         )
 
 
-@click.command("init", help="初始化所有应用")
-@click.option("-l", "--limit", help="将初始化限制到此服务或插件")
+@click.command("init", help="Initialise all applications")
+@click.option("-l", "--limit", help="Limit initialisation to this service or plugin")
 def initialise(limit: t.Optional[str]) -> t.Iterator[tuple[str, str]]:
-    fmt.echo_info("正在初始化所有服务...")
+    fmt.echo_info("Initialising all services...")
     filter_context = hooks.Contexts.app(limit).name if limit else None
 
     for service, task in hooks.Filters.CLI_DO_INIT_TASKS.iterate_from_context(
         filter_context
     ):
-        fmt.echo_info(f"在 {service} 中运行初始化任务")
+        fmt.echo_info(f"Running init task in {service}")
         yield service, task
 
-    fmt.echo_info("所有服务已初始化。")
+    fmt.echo_info("All services initialised.")
 
 
-@click.command(help="创建用户并交互式设置密码")
-@click.option("--superuser", is_flag=True, help="创建超级用户")
-@click.option("--staff", is_flag=True, help="创建职员用户")
+@click.command(help="Create an Open edX user and interactively set their password")
+@click.option("--superuser", is_flag=True, help="Make superuser")
+@click.option("--staff", is_flag=True, help="Make staff user")
 @click.option(
     "-p",
     "--password",
-    help="从命令行指定密码。如果未定义，将提示您输入密码",
+    help="Specify password from the command line. If undefined, you will be prompted to input a password",
     prompt=True,
     hide_input=True,
 )
@@ -106,46 +106,36 @@ def createuser(
     email: str,
 ) -> t.Iterable[tuple[str, str]]:
     """
-    创建 Open edX 用户
+    Create an Open edX user
 
-    密码可以作为选项传递，或以交互方式设置。
+    Password can be passed as an option or will be set interactively.
     """
-    # 临时处理：此指令暂未启用，待后续支持
-    fmt.echo_info("⚠️  createuser 指令暂未启用，待后续支持...")
-    return iter([])
-
-    # 以下为原有逻辑（暂未启用）
     yield ("lms", create_user_template(superuser, staff, name, email, password))
 
 
-@click.command(help="导入演示课程")
+@click.command(help="Import the demo course")
 @click.option(
     "-r",
     "--repo",
     default="https://github.com/openedx/openedx-demo-course",
     show_default=True,
-    help="包含要导入课程的 Git 仓库",
+    help="Git repository that contains the course to be imported",
 )
 @click.option(
     "-d",
     "--repo-dir",
     default="",
     show_default=True,
-    help="要从中导入数据的 Git 相对子目录。如果未指定，将默认为包含 course.xml 的目录",
+    help="Git relative subdirectory to import data from. If unspecified, will default to the directory containing course.xml",
 )
 @click.option(
     "-v",
     "--version",
-    help="Git 分支、标签或 sha1 标识符。如果未指定，将默认为 OPENEDX_COMMON_VERSION 设置的值。",
+    help="Git branch, tag or sha1 identifier. If unspecified, will default to the value of the OPENEDX_COMMON_VERSION setting.",
 )
 def importdemocourse(
     repo: str, repo_dir: str, version: t.Optional[str]
 ) -> t.Iterable[tuple[str, str]]:
-    # 临时处理：此指令暂未启用，待后续支持
-    fmt.echo_info("⚠️  importdemocourse 指令暂未启用，待后续支持...")
-    return iter([])
-
-    # 以下为原有逻辑（暂未启用）
     version = version or "{{ OPENEDX_COMMON_VERSION }}"
     template = f"""
 # Clone the repo
@@ -184,28 +174,23 @@ python ./manage.py cms import ../data "$course_root"
     yield ("cms", template)
 
 
-@click.command(help="导入演示内容库")
+@click.command(help="Import the demo content libraries")
 @click.argument("owner_username")
 @click.option(
     "-r",
     "--repo",
     default="https://github.com/openedx/openedx-demo-course",
     show_default=True,
-    help="包含要导入库的 Git 仓库",
+    help="Git repository that contains the library/libraries to be imported",
 )
 @click.option(
     "-v",
     "--version",
-    help="Git 分支、标签或 sha1 标识符。如果未指定，将默认为 OPENEDX_COMMON_VERSION 设置的值。",
+    help="Git branch, tag or sha1 identifier. If unspecified, will default to the value of the OPENEDX_COMMON_VERSION setting.",
 )
 def importdemolibraries(
     owner_username: str, repo: str, version: t.Optional[str]
 ) -> t.Iterable[tuple[str, str]]:
-    # 临时处理：此指令暂未启用，待后续支持
-    fmt.echo_info("⚠️  importdemolibraries 指令暂未启用，待后续支持...")
-    return iter([])
-
-    # 以下为原有逻辑（暂未启用）
     version = version or "{{ OPENEDX_COMMON_VERSION }}"
     template = f"""
 # Clone the repo
@@ -249,11 +234,6 @@ done"""
 def print_edx_platform_setting(
     setting: str, service: str
 ) -> t.Iterable[tuple[str, str]]:
-    # 临时处理：此指令暂未启用，待后续支持
-    fmt.echo_info("⚠️  print-edx-platform-setting 指令暂未启用，待后续支持...")
-    return iter([])
-
-    # 以下为原有逻辑（暂未启用）
     command = f"./manage.py {service} shell -c 'from django.conf import settings; print(settings.{setting})'"
     yield (service, command)
 
@@ -276,11 +256,6 @@ def settheme(domains: list[str], theme_name: str) -> t.Iterable[tuple[str, str]]
 
     To reset to the default theme , use 'default' as the theme name.
     """
-    # 临时处理：此指令暂未启用，待后续支持
-    fmt.echo_info("⚠️  settheme 指令暂未启用，待后续支持...")
-    return iter([])
-
-    # 以下为原有逻辑（暂未启用）
     yield ("lms", set_theme_template(theme_name, domains))
 
 
@@ -293,11 +268,6 @@ def sqlshell(args: list[str]) -> t.Iterable[tuple[str, str]]:
     Extra arguments will be passed to the `mysql` command verbatim. For instance, to
     show tables from the "openedx" database, run `do sqlshell openedx -e 'show tables'`.
     """
-    # 临时处理：此指令暂未启用，待后续支持
-    fmt.echo_info("⚠️  sqlshell 指令暂未启用，待后续支持...")
-    return iter([])
-
-    # 以下为原有逻辑（暂未启用）
     command = "mysql --user={{ MYSQL_ROOT_USERNAME }} --password={{ MYSQL_ROOT_PASSWORD }} --host={{ MYSQL_HOST }} --port={{ MYSQL_PORT }} --default-character-set=utf8mb4"
     if args:
         command += " " + shlex.join(args)
@@ -347,11 +317,7 @@ def convert_mysql_utf8mb4_charset(
 
     Can specify whether to upgrade all tables, or include certain tables/apps or to exclude certain tables/apps
     """
-    # 临时处理：此指令暂未启用，待后续支持
-    fmt.echo_info("⚠️  convert-mysql-utf8mb4-charset 指令暂未启用，待后续支持...")
-    return iter([])
 
-    # 以下为原有逻辑（暂未启用）
     config = tutor_config.load(context.root)
 
     if not config["RUN_MYSQL"]:
@@ -433,11 +399,7 @@ def update_mysql_authentication_plugin(
     Update the authentication plugin of MySQL users from mysql_native_password to caching_sha2_password
     Handy command utilized when upgrading to v8.4 of MySQL which deprecates mysql_native_password
     """
-    # 临时处理：此指令暂未启用，待后续支持
-    fmt.echo_info("⚠️  update-mysql-authentication-plugin 指令暂未启用，待后续支持...")
-    return iter([])
 
-    # 以下为原有逻辑（暂未启用）
     config = tutor_config.load(context.root)
 
     if not config["RUN_MYSQL"]:

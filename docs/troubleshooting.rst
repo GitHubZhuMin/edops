@@ -65,7 +65,7 @@ If the above command does not work, you should fix your Docker installation. Som
 
 Open edX requires at least 4 GB RAM, in particular, to run the SQL migrations. If the ``tutor local launch`` command dies after displaying "Running migrations", you most probably need to buy more memory or add swap to your machine.
 
-On macOS, by default, Docker allocates at most 2 GB of RAM to containers. ``launch`` tries to check the current allocation and outputs a warning if it can't find a value of at least 4 GB. Follow `these instructions from the official Docker documentation <https://docs.docker.com/docker-for-mac/#advanced>`__ to allocate at least 4-5 GB to the Docker daemon.
+On macOS, by default, Docker allocates at most 2 GB of RAM to containers. ``launch`` tries to check the current allocation and outputs a warning if it can't find a value of at least 4 GB. Follow `these instructions from the official Docker documentation <https://docs.docker.com/desktop/settings-and-maintenance/settings/#advanced>`__ to allocate at least 4-5 GB to the Docker daemon.
 
 If migrations were killed halfway, there is a good chance that the MySQL database is in a state that is hard to recover from. The easiest way to recover is to delete all the MySQL data and restart the launch process. After more memory has been allocated to the Docker daemon, run::
 
@@ -226,3 +226,20 @@ The handy :ref:`update-mysql-authentication-plugin <update_mysql_authentication_
 
     tutor local do update-mysql-authentication-plugin $(tutor config printvalue OPENEDX_MYSQL_USERNAME)
     tutor local do update-mysql-authentication-plugin $(tutor config printvalue MYSQL_ROOT_USERNAME)
+
+Emails sent without correct branding
+------------------------------------
+
+**Cause**
+
+When the platform cannot determine the site from the request, it falls back to
+``SITE_ID``. If ``SITE_ID`` points to ``example.com``, emails are sent without
+proper branding.
+
+**Fix**
+
+Ensure your LMS site uses ``id = 2`` and set::
+
+    SITE_ID = 2
+
+in the ``openedx-common-settings`` patch, then restart Tutor.
