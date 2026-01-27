@@ -324,10 +324,10 @@ MEILISEARCH_HOST: "meilisearch.{{ LMS_HOST }}"
 MEILISEARCH_URL: "http://meilisearch:7700"
 MEILISEARCH_PUBLIC_URL: "{% if ENABLE_HTTPS %}https{% else %}http{% endif %}://{{ MEILISEARCH_HOST }}"
 MEILISEARCH_INDEX_PREFIX: "tutor_"
-MEILISEARCH_MASTER_KEY: "{{ 24|random_string }}"
-MEILISEARCH_API_KEY_UID: "{{ 4|uuid }}"
-MEILISEARCH_API_KEY: "{{ MEILISEARCH_MASTER_KEY|uid_master_hash(MEILISEARCH_API_KEY_UID) }}"
 DOCKER_IMAGE_MEILISEARCH: "docker.io/getmeili/meilisearch:v1.8.4"
+MEILISEARCH_MASTER_KEY: "{{ 32|random_string }}"
+MEILISEARCH_API_KEY: "{{ 32|random_string }}"
+MEILISEARCH_API_KEY_UID: "{{ 32|random_string }}"
 
 # SMTP 配置（邮件服务）
 # 作用：提供 Open edX 平台的邮件发送功能
@@ -651,7 +651,7 @@ EDOPS_MQTT_URL: ""
 #   - 仅在启用流媒体功能时需要配置
 #   - 端口号确保不与现有服务冲突
 
-EDOPS_ZLMEDIAKIT_IMAGE: "{{ EDOPS_IMAGE_REGISTRY }}/library/zlmediakit:master"
+EDOPS_ZLMEDIAKIT_IMAGE: "{{ EDOPS_IMAGE_REGISTRY }}/library/zlmediakit/zlmediakit:master-g8a2c28d"
 EDOPS_ZLMEDIAKIT_HOST: "zlmediakit"
 EDOPS_ZLMEDIAKIT_HTTP_PORT: 80
 EDOPS_ZLMEDIAKIT_RTMP_PORT: 1935

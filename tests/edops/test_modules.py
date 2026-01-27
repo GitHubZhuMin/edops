@@ -70,3 +70,46 @@ def test_module_order_resolution():
     # This would require a config, which we don't have in unit tests
     # For now, just test that the function exists
     assert hasattr(modules, "_resolve_module_order")
+
+
+def test_get_enabled_module_targets():
+    """Test that the correct module targets are returned."""
+    # 1. Test with only default modules (base, common)
+    config = {"EDOPS_ENABLED_MODULES": []}
+    targets = modules.get_enabled_module_targets(config)
+    assert "local/zhjx-base.yml" in targets
+    assert "local/zhjx-common.yml" in targets
+    assert "local/zhjx-zlmediakit.yml" not in targets
+
+    # 2. Test with an optional module enabled
+    config = {"EDOPS_ENABLED_MODULES": ["zhjx_zlmediakit"]}
+    targets = modules.get_enabled_module_targets(config)
+    assert "local/zhjx-base.yml" in targets
+    assert "local/zhjx-common.yml" in targets
+    assert "local/zhjx-zlmediakit.yml" in targets
+
+
+def test_module_flag_synchronization():
+    """Test the bidirectional synchronization of module flags."""
+    # Test case 1: EDOPS_ENABLED_MODULES enables the module
+    config = {"EDOPS_ENABLED_MODULES": ["zhjx_zlmediakit"]}
+    modules._synchronize_module_flags(config)
+    assert config["RUN_ZHJX_ZLMEDIAKIT"] is True
+    assert "zhjx_zlmediakit" in config["EDOPS_ENABLED_MODULES"]
+
+    # Test case 2: Legacy RUN_ flag enables the module
+    config = {"RUN_ZHJX_ZLMEDIAKIT": True, "EDOPS_ENABLED_MODULES": []}
+    modules._synchronize_module_flags(config)
+    assert config["RUN_ZHJX_ZLMEDIAKIT"] is True
+    assert "zhjx_zlmediakit" in config["EDOPS_ENABLED_MODULES"]
+
+    # Test case 3: Both are set, should remain consistent
+    config = {"RUN_ZHJX_ZLMEDIAKIT": True, "EDOPS_ENABLED_MODULES": ["zhjx_zlmediakit"]}
+    modules._synchronize_module_flags(config)
+    assert config["RUN_ZHJX_ZLMEDIAKIT"] is True
+    assert "zhjx_zlmediakit" in config["EDOPS_ENABLED_MODULES"]
+
+    # Test case 4: Module is disabled
+    config = {"EDOPS_ENABLED_MODULES": []}
+    modules._synchronize_module_flags(config)
+    assert "RUN_ZHJX_ZLMEDIAKIT" not in config

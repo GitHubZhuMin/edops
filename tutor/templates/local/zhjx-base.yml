@@ -16,11 +16,6 @@ services:
       - ../../data/elasticsearch:/mounts/elasticsearch
       - ../../data/kafka:/mounts/kafka
       - ../../data/kkfileview:/mounts/kkfileview
-      {% if RUN_ZHJX_ZLMEDIAKIT %}
-      - ../../data/zlmediakit/conf:/mounts/zlmediakit/conf
-      - ../../data/zlmediakit/log:/mounts/zlmediakit/log
-      - ../../data/zlmediakit/www:/mounts/zlmediakit/www
-      {% endif %}
       {{ patch("local-docker-compose-permissions-zhjx-volumes")|indent(6) }}
 
   zhjx-nginx:
