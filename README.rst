@@ -1,79 +1,109 @@
+.. _Tutor: https://github.com/overhangio/tutor
+.. _QUICKSTART_CN.md: QUICKSTART_CN.md
+.. _agents.md: agents.md
+.. _docs/edops-cli.md: docs/edops-cli.md
+.. _docs/DESIGN_DECISIONS_CN.md: docs/DESIGN_DECISIONS_CN.md
+.. _docs/zhjx-modules.md: docs/zhjx-modules.md
+.. _docs/reports/: docs/reports/
+
 EdOps：面向 zhjx 体系的统一部署 CLI
 ===================================
 
-EdOps 是在 `Tutor <https://github.com/overhangio/tutor>`__ 框架基础上二次开发的命令行工具，目标是把联奕智慧教学团队的 base/common/``zhjx-*`` 业务系统统一到一套配置、构建与部署流程里。它仍然沿用 Tutor 的 Typer CLI、模板渲染与插件机制，但默认能力全部面向混合教学、AI 督导、直播电商等业务场景。
+EdOps 是什么？
+-------------
 
-目前我们聚焦以下三类工作：
+EdOps 是一款命令行界面（CLI）工具，旨在为 zhjx 系列业务系统提供标准化的部署与配置方案。它是强大的 `Tutor`_ 框架的一个分支，继承了其基于模板渲染、Docker Compose 和模块化插件系统的稳健架构。
 
-* **命令体验迁移**：把 ``tutor`` 命令改造成 ``edops``，保留 ``config``、``local``、``dev``、``k8s`` 等核心子命令。
-* **模板替换**：用 `zhjx-hub/稳定1panel版本/` 里的 Compose 模板替换 Open edX 相关模板，优先支持 base、common、``zhjx-zlmediakit``。
-* **插件化模块**：把 ``zhjx-*`` 业务子系统抽象为插件（默认关闭），base/common 作为核心插件自动启用。
+Tutor 主要专注于部署 Open edX，而 EdOps 则专门针对 zhjx 的需求进行了定制，为管理从本地开发到生产集群的各种环境提供了统一的工作流。
 
-核心特性
+核心概念
 --------
 
-* **多环境统一**：沿用 Tutor 的 ``dev``、``local``、``k8s`` 三种模式，保证开发/单机/集群行为一致。
-* **集中配置**：所有镜像版本、域名、数据库参数统一记录在 ``edops-config.yml``，支持按环境覆盖。
-* **模块化控制**：base（nacos、mysql、minio、redis、MQ 等）和 common（用户、认证、后台、网关）始终启用，``zhjx-*`` 模块通过 ``EDOPS_ENABLED_MODULES`` 配置按需开启。
-* **日志追溯**：继承 Tutor 的日志与命令输出体系，便于对每一次构建、部署、回滚进行审计。
+### 1. 部署框架，而非业务系统
 
-快速开始
+理解 EdOps 的关键在于其定位：它是一个 **部署与配置工具**。它本身不包含任何业务逻辑，而是提供了一套脚手架，用于部署和管理其他应用，确保它们以一致且可复现的方式进行配置和启动。
+
+### 2. 模块化架构
+
+EdOps 采用模块化架构来管理 zhjx 系统的不同组件。该架构层次清晰：
+
+- **`base` 模块：** 此模块始终启用，提供所有其他模块所依赖的核心基础设施服务，如 Nacos、MySQL、Minio、Redis 和消息队列。
+- **`common` 模块：** 此模块也始终启用，提供 zhjx 所有业务系统共享的通用服务，通常包括用户管理、认证、后台管理面板和 API 网关。
+- **`zhjx-*` 模块：** 这些是可选的业务模块，提供特定功能，例如用于媒体流处理的 `zhjx-zlmediakit`。可以根据具体部署需求启用或禁用这些模块。
+
+### 3. 集中化配置
+
+EdOps 部署的所有配置都通过单一的 `config.yml` 文件进行管理。该文件控制着从镜像版本、域名到数据库凭据的所有内容。这种集中化的方法使得环境复制和审计变得简单。
+
+要启用或禁用 `zhjx-*` 模块，您需要在配置文件中使用 `EDOPS_ENABLED_MODULES` 设置。例如：
+
+.. code-block:: yaml
+
+  EDOPS_ENABLED_MODULES:
+    - zhjx-zlmediakit
+    - zhjx-another-module
+
+`base` 和 `common` 模块始终处于启用状态，无需在此处列出。
+
+### 4. 环境一致性
+
+EdOps 继承了 Tutor 对多部署环境的支持，确保您的应用无论是在本地开发、单机服务器还是 Kubernetes 集群上，其行为都保持一致。
+
+- **`dev`：** 用于本地开发，支持热重载和便捷调试。
+- **`local`：** 用于单机生产部署，使用 Docker Compose。
+- **`k8s`：** 用于在 Kubernetes 上的多节点、可扩展部署。
+
+快速入门
 --------
 
-1. 克隆本仓库并切换到 ``edops-main`` 分支。
-2. 创建虚拟环境：``python3 -m venv venv && source venv/bin/activate``
-3. 安装 EdOps：``pip install -e .``
-4. 查看帮助：``edops --help``（全中文交互）
-5. 详细指南：查看 ``QUICKSTART_CN.md``
+1.  **克隆仓库：**
 
-文档导航
---------
+    .. code-block:: bash
 
-**快速上手**
-  ``QUICKSTART_CN.md``
-    5 分钟快速开始指南
+      git clone https://your-repo-url/edops.git
+      cd edops
 
-**参考文档**
-  ``docs/edops-cli.md``
-    完整的 CLI 命令参考手册
-  ``docs/DESIGN_DECISIONS_CN.md``
-    核心设计决策和技术共识
-  ``docs/zhjx-modules.md``
-    模块说明和配置
+2.  **创建并激活虚拟环境：**
 
-**报告归档**
-  ``docs/reports/``
-    实施报告、Bug 修复记录、测试指南等
-  ``docs/reports/README.md``
-    报告目录索引
+    .. code-block:: bash
 
-目录结构
---------
+      python3 -m venv venv
+      source venv/bin/activate
 
-``tutor/``
-    核心代码（保留 tutor 目录名以兼容上游）
-``tutor/commands/``
-    CLI 命令实现（已中文化）
-``tutor/edops/``
-    EdOps 专属模块（健康检查、镜像管理、模块定义）
-``tutor/templates/edops/``
-    EdOps 部署模板（base/common/zhjx-* 模块）
-``docs/``
-    文档目录（参考文档和报告归档）
-``tests/``
-    单元测试
+3.  **以可编辑模式安装 EdOps：**
 
-当前状态
---------
+    .. code-block:: bash
 
-✅ **第 2 阶段已完成**（2024年12月5日）
+      pip install -e .
 
-* ✅ 镜像管理：查询、列表、版本管理
-* ✅ 配置增强：get/list/validate/render 命令
-* ✅ 部署增强：status/healthcheck/history/rollback 命令
-* ✅ 健康检查：HTTP/TCP 自动检测
-* ✅ 历史追踪：完整的操作审计
-* ✅ 全面中文化：所有命令和消息
-* ✅ 双命令支持：edops ≡ tutor
+4.  **初始化配置：**
 
-详见：``docs/reports/PHASE2_COMPLETION_CN.md``
+    .. code-block:: bash
+
+      edops config save --interactive
+
+    此命令将引导您完成初始设置并创建 `config.yml` 文件。
+
+5.  **启动平台：**
+
+    .. code-block:: bash
+
+      edops local launch
+
+更详细的说明，请参阅 `QUICKSTART_CN.md`_ 指南。
+
+致开发者和贡献者
+--------------------
+
+本仓库在 AI Agent 的协助下进行管理。为确保顺畅协作，请阅读 `agents.md`_ 文件，其中包含了 AI 在与此代码库互动时需遵循的重要准则。
+
+进一步阅读
+----------
+
+- **快速上手:** `QUICKSTART_CN.md`_ - 5 分钟快速入门指南。
+- **参考文档:**
+  - `CLI 参考`_ - 完整的 CLI 命令参考手册。
+  - `设计决策`_ - 核心设计决策与技术共识。
+  - `模块指南`_ - 模块说明与配置。
+- **报告:**
+  - `报告归档`_ - 实施报告、错误修复记录和测试指南。
