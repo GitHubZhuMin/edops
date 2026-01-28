@@ -119,12 +119,49 @@ class HealthChecker:
 
     def _check_container(self, health_check: HealthCheckDef) -> bool:
         """使用 Docker 检查容器状态。"""
-        # 这将使用 Docker SDK 检查容器健康状态
-        # 目前我们实现一个基础版本
-        if self.verbose:
-            msg = f"{health_check.service} 的容器健康检查尚未实现"
-            fmt.echo_info(msg)
-        return True
+        import subprocess
+
+        try:
+            # 获取容器状态和健康状态
+            result = subprocess.check_output(
+                [
+                    "docker",
+                    "inspect",
+                    "--format",
+                    "{{.State.Status}}|{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}",
+                    health_check.service,
+                ],
+                stderr=subprocess.STDOUT,
+                text=True,
+            ).strip()
+            state, health = result.split("|")
+
+            if state == "running":
+                if health in ["healthy", "none"]:
+                    if self.verbose:
+                        msg = f"✓ {health_check.service} 容器运行正常 (状态: {state}, 健康: {health})"
+                        fmt.echo_info(msg)
+                    return True
+                else:
+                    if self.verbose:
+                        msg = f"✗ {health_check.service} 容器不健康 (健康状态: {health})"
+                        fmt.echo_error(msg)
+                    return False
+            else:
+                if self.verbose:
+                    msg = f"✗ {health_check.service} 容器未运行 (状态: {state})"
+                    fmt.echo_error(msg)
+                return False
+        except subprocess.CalledProcessError:
+            if self.verbose:
+                msg = f"✗ 无法找到容器 {health_check.service}"
+                fmt.echo_error(msg)
+            return False
+        except Exception as e:
+            if self.verbose:
+                msg = f"✗ 检查容器 {health_check.service} 时出错: {e}"
+                fmt.echo_error(msg)
+            return False
 
     def check_all(self, health_checks: list[HealthCheckDef]) -> bool:
         """检查所有健康检查，全部通过返回 True。"""

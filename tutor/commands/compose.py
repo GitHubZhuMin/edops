@@ -163,7 +163,6 @@ def launch(
 
     # 运行健康检查
     if not no_health_check:
-        from tutor.edops import modules as edops_modules
         enabled_modules = edops_modules.get_enabled_modules(config)
         if enabled_modules:
             click.echo(fmt.title("运行健康检查"))
