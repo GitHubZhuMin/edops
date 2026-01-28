@@ -268,8 +268,11 @@ def rollback(
 ) -> None:
     """将模块回滚到之前的版本。"""
     from pathlib import Path
+
+    from tutor import config as tutor_config
     from tutor.edops import image_registry
 
+    config = tutor_config.load(context.root)
     history_file = Path(context.root) / "deploy-history.yml"
     history = image_registry.DeployHistory(history_file)
 
@@ -307,9 +310,20 @@ def rollback(
         f"将 {module_name} 从 {current_version} 回滚到 {target_record.tag}"
     )
 
-    # TODO: 使用目标版本更新 config.yml
-    # 这需要知道哪个配置变量映射到哪个服务
-    # 目前我们只在历史中记录回滚
+    # 更新 config.yml
+    all_modules = edops_modules._load_modules()
+    module_def = all_modules.get(module_name)
+    config_updated = False
+    if module_def:
+        for img in module_def.images:
+            if img.name == target_record.service:
+                config[img.version_var] = target_record.tag
+                tutor_config.save_config_file(context.root, config)
+                config_updated = True
+                fmt.echo_info(
+                    f"✓ 已自动更新配置项 {img.version_var}={target_record.tag}"
+                )
+                break
 
     # 记录回滚操作
     history.add_record(
@@ -320,7 +334,14 @@ def rollback(
         operation="rollback",
     )
 
-    fmt.echo_info("✓ 回滚已记录。请手动更新版本并重启。")
+    if config_updated:
+        fmt.echo_info("✓ 回滚已完成。请重启服务以使更改生效。")
+    else:
+        fmt.echo_info("✓ 回滚已在历史中记录。")
+        fmt.echo_info(
+            fmt.alert("⚠️  未能自动更新配置，请手动更新版本并重启。")
+        )
+
     fmt.echo_info(f"  服务: {target_record.service}")
     fmt.echo_info(f"  镜像: {target_record.image}:{target_record.tag}")
 
