@@ -2,7 +2,7 @@ services:
 
   # Set bind-mounted folder ownership for zhjx services
   zhjx-permissions:
-    image: {{ DOCKER_IMAGE_PERMISSIONS }}
+    image: zhjx-images.tencentcloudcr.com/library/permissions:1.0.0
     restart: on-failure
     entrypoint: []
     command: ["sh", "/usr/local/bin/setowners-zhjx.sh"]
@@ -17,26 +17,26 @@ services:
       - ../../data/kafka:/mounts/kafka
       - ../../data/kkfileview:/mounts/kkfileview
       - ../../data/mysql:/mounts/mysql
-      {{ patch("local-docker-compose-permissions-zhjx-volumes")|indent(6) }}
+
 
   zhjx-mysql:
-    image: {{ DOCKER_IMAGE_MYSQL }}
+    image: docker.io/mysql:8.4.7
     init: true
     hostname: zhjx-mysql
     restart: unless-stopped
     environment:
-      - MYSQL_ROOT_PASSWORD={{ EDOPS_MYSQL_ROOT_PASSWORD }}
+      - MYSQL_ROOT_PASSWORD=STj1ZAHGUYJS
     ports:
-      - "{{ EDOPS_MYSQL_PORT }}:3306"
+      - "3306:3306"
     volumes:
       - ../../data/mysql:/var/lib/mysql
     networks:
-      - {{ EDOPS_NETWORK_NAME }}
+      - zhjx-network
     depends_on:
       - zhjx-permissions
 
   zhjx-nginx:
-    image: {{ EDOPS_IMAGE_REGISTRY }}/library/nginx:1.23.2
+    image: zhjx-images.tencentcloudcr.com/library/nginx:1.23.2
     init: true
     hostname: zhjx-nginx
     restart: unless-stopped
@@ -44,31 +44,31 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - "{{ EDOPS_NGINX_CONF }}:/etc/nginx/nginx.conf"
-      - "{{ EDOPS_CERT_KEY_FILE }}:/data/nginx/portal_ly-sky_com.key"
-      - "{{ EDOPS_CERT_CRT_FILE }}:/data/nginx/portal_ly-sky_com.crt"
+      - "../build/nginx/nginx.conf:/etc/nginx/nginx.conf"
+      - "../build/nginx/portal_ly-sky_com.key:/data/nginx/portal_ly-sky_com.key"
+      - "../build/nginx/portal_ly-sky_com.crt:/data/nginx/portal_ly-sky_com.crt"
     networks:
-      - {{ EDOPS_NETWORK_NAME }}
+      - zhjx-network
     depends_on: []
 
   zhjx-rabbitmq:
-    image: {{ EDOPS_IMAGE_REGISTRY }}/library/rabbitmq:3.8-management-delayed
+    image: zhjx-images.tencentcloudcr.com/library/rabbitmq:3.8-management-delayed
     hostname: zhjx-rabbitmq
     init: true
     restart: unless-stopped
     user: "999:999"
     environment:
-      - RABBITMQ_DEFAULT_USER={{ EDOPS_RABBITMQ_DEFAULT_USER }}
-      - RABBITMQ_DEFAULT_PASS={{ EDOPS_RABBITMQ_DEFAULT_PASS }}
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=LUPwgc3qoGIT
     volumes:
       - ../../data/rabbitmq:/var/lib/rabbitmq
     networks:
-      - {{ EDOPS_NETWORK_NAME }}
+      - zhjx-network
     depends_on:
       - zhjx-permissions
 
   zhjx-redis:
-    image: {{ DOCKER_IMAGE_REDIS }}
+    image: zhjx-images.tencentcloudcr.com/library/redis:5.0.7
     hostname: zhjx-redis
     init: true
     restart: unless-stopped
@@ -76,12 +76,12 @@ services:
     volumes:
       - ../../data/redis:/data
     networks:
-      - {{ EDOPS_NETWORK_NAME }}
+      - zhjx-network
     depends_on:
       - zhjx-permissions
 
   zhjx-nacos:
-    image: {{ EDOPS_IMAGE_REGISTRY }}/library/nacos-server:2.0.2
+    image: zhjx-images.tencentcloudcr.com/library/nacos-server:2.0.2
     init: true
     hostname: zhjx-nacos
     restart: unless-stopped
@@ -89,36 +89,36 @@ services:
       - PREFER_HOST_MODE=hostname
       - MODE=standalone
       - SPRING_DATASOURCE_PLATFORM=mysql
-      - MYSQL_SERVICE_HOST={{ EDOPS_MASTER_NODE_IP }}
+      - MYSQL_SERVICE_HOST=192.168.0.2
       - MYSQL_SERVICE_DB_NAME=nacos
       - MYSQL_SERVICE_PORT=3306
       - MYSQL_SERVICE_USER=root
-      - MYSQL_SERVICE_PASSWORD={{ EDOPS_MYSQL_ROOT_PASSWORD }}
+      - MYSQL_SERVICE_PASSWORD=STj1ZAHGUYJS
       - DEBUG=true
     networks:
-      - {{ EDOPS_NETWORK_NAME }}
+      - zhjx-network
     depends_on:
       - zhjx-permissions
       - zhjx-redis
 
   zhjx-sentinel:
-    image: {{ EDOPS_IMAGE_REGISTRY }}/library/sentinel-dashboard:1.8.5
+    image: zhjx-images.tencentcloudcr.com/library/sentinel-dashboard:1.8.5
     init: true
     hostname: zhjx-sentinel
     restart: unless-stopped
     depends_on:
       - zhjx-nacos
     networks:
-      - {{ EDOPS_NETWORK_NAME }}
+      - zhjx-network
 
   zhjx-fileview:
-    image: {{ EDOPS_IMAGE_REGISTRY }}/library/keking/kkfileview:3.1
+    image: zhjx-images.tencentcloudcr.com/library/keking/kkfileview:3.1
     init: true
     hostname: zhjx-fileview
     restart: unless-stopped
     user: "1000:1000"
     networks:
-      - {{ EDOPS_NETWORK_NAME }}
+      - zhjx-network
     environment:
       KK_FILE_DIR: "/data/file"
       KK_BASE_URL: "http://127.0.0.1/preview/"
@@ -129,28 +129,28 @@ services:
       - zhjx-permissions
 
   zhjx-minio:
-    image: {{ EDOPS_IMAGE_REGISTRY }}/library/minio:RELEASE.2022-08-02T23-59-16Z.fips
+    image: zhjx-images.tencentcloudcr.com/library/minio:RELEASE.2022-08-02T23-59-16Z.fips
     init: true
     hostname: zhjx-minio
     restart: unless-stopped
     user: "1000:1000"
     ports:
-      - "{{ EDOPS_MINIO_API_PORT }}:9000"
-      - "{{ EDOPS_MINIO_CONSOLE_PORT }}:9001"
+      - "59000:9000"
+      - "59001:9001"
     command: server --console-address :9001 /data
     environment:
-      MINIO_ROOT_USER: "{{ EDOPS_MINIO_ROOT_USER }}"
-      MINIO_ROOT_PASSWORD: "{{ EDOPS_MINIO_ROOT_PASSWORD }}"
-      MINIO_SERVER_URL: "http://{{ EDOPS_MASTER_NODE_IP }}:{{ EDOPS_MINIO_API_PORT }}"
+      MINIO_ROOT_USER: "admin"
+      MINIO_ROOT_PASSWORD: "ErqOl4kwLwcg"
+      MINIO_SERVER_URL: "http://192.168.0.2:59000"
     networks:
-      - {{ EDOPS_NETWORK_NAME }}
+      - zhjx-network
     volumes:
       - ../../data/minio:/data
     depends_on:
       - zhjx-permissions
 
   zhjx-emqx:
-    image: {{ EDOPS_IMAGE_REGISTRY }}/library/emqx:4.4.19
+    image: zhjx-images.tencentcloudcr.com/library/emqx:4.4.19
     init: true
     hostname: zhjx-emqx
     restart: unless-stopped
@@ -167,14 +167,14 @@ services:
       - EMQX_LISTENER__WSS__EXTERNAL__SSL=true
       - EMQX_LISTENER__WSS__EXTERNAL__SSL_OPTS="certfile:/etc/emqx/portal_ly-sky_com.crt,keyfile:/etc/emqx/portal_ly-sky_com.key"
     volumes:
-      - "{{ EDOPS_CERT_KEY_FILE }}:/etc/emqx/portal_ly-sky_com.key"
-      - "{{ EDOPS_CERT_CRT_FILE }}:/etc/emqx/portal_ly-sky_com.crt"
+      - "../build/nginx/portal_ly-sky_com.key:/etc/emqx/portal_ly-sky_com.key"
+      - "../build/nginx/portal_ly-sky_com.crt:/etc/emqx/portal_ly-sky_com.crt"
     networks:
-      - {{ EDOPS_NETWORK_NAME }}
+      - zhjx-network
     depends_on: []
 
   zhjx-kafka:
-    image: {{ EDOPS_IMAGE_REGISTRY }}/library/bitnami/kafka:3.5
+    image: zhjx-images.tencentcloudcr.com/library/bitnami/kafka:3.5
     init: true
     hostname: zhjx-kafka
     restart: unless-stopped
@@ -191,14 +191,14 @@ services:
     volumes:
       - ../../data/kafka:/bitnami/kafka
     networks:
-      - {{ EDOPS_NETWORK_NAME }}
+      - zhjx-network
     depends_on:
       - zhjx-permissions
 
   zhjx-elasticsearch:
     init: true
     hostname: zhjx-elasticsearch
-    image: {{ EDOPS_IMAGE_REGISTRY }}/library/elasticsearch:7.14.0-ik
+    image: zhjx-images.tencentcloudcr.com/library/elasticsearch:7.14.0-ik
     restart: unless-stopped
     user: "1000:1000"
     volumes:
@@ -209,12 +209,10 @@ services:
       http.cors.enabled: "true"
       http.cors.allow-origin: "*"
     networks:
-      - {{ EDOPS_NETWORK_NAME }}
+      - zhjx-network
     depends_on:
       - zhjx-permissions
 
 networks:
-  {{ EDOPS_NETWORK_NAME }}:
+  zhjx-network:
     external: true
-
-

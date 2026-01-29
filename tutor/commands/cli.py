@@ -1,11 +1,10 @@
 from __future__ import annotations
 
+import os
 import sys
 import typing as t
 
 import appdirs
-import os
-
 import click
 
 from tutor import exceptions, fmt, hooks, utils

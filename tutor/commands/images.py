@@ -402,8 +402,6 @@ def edops_versions(context: Context, service_name: str, debug: bool) -> None:
             
             # 尝试获取 WWW-Authenticate 头用于调试
             try:
-                from tutor.edops import image_registry
-                test_client = image_registry.get_registry_client(config)
                 test_url = f"https://{config.get('EDOPS_IMAGE_REGISTRY', '')}/v2/{repository}/tags/list"
                 import requests
                 test_response = requests.get(test_url, timeout=5)
@@ -443,8 +441,9 @@ def edops_versions(context: Context, service_name: str, debug: bool) -> None:
 @click.pass_obj
 def edops_inspect(context: Context, service_name: str, tag: str) -> None:
     """从仓库获取镜像的详细信息。"""
-    from tutor.edops import image_registry
     import json
+
+    from tutor.edops import image_registry
 
     config = tutor_config.load(context.root)
 

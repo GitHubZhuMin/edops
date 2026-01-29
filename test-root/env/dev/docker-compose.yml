@@ -1,0 +1,15 @@
+
+
+services:
+  permissions:
+
+
+
+
+  meilisearch:
+    ports:
+      - "127.0.0.1:7700:7700"
+    networks:
+      default:
+        aliases:
+          - "meilisearch.www.myopenedx.com"

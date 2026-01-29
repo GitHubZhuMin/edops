@@ -357,8 +357,8 @@ def resolve_repository_path(config: dict, service_name: str) -> str:
     Returns:
         完整的 repository 路径（如 ly-sky.com/ly-ac-gateway-svc）
     """
-    from tutor.edops import modules as edops_modules
     from tutor import env as tutor_env
+    from tutor.edops import modules as edops_modules
 
     # 从模块元数据中查找
     modules_list = edops_modules.get_enabled_modules(config)

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import importlib_resources
-from tutor import serialize, exceptions
+
+from tutor import exceptions, serialize
 from tutor.types import Config
 
 PRESETS_DIR = importlib_resources.files("tutor") / "templates" / "config" / "presets"

@@ -3,15 +3,13 @@
 from __future__ import annotations
 
 import os
-import typing as t
 from pathlib import Path
 
 import click
 
 from tutor import config as tutor_config
 from tutor import env as tutor_env
-from tutor import exceptions
-from tutor import fmt
+from tutor import exceptions, fmt
 from tutor.commands.context import Context
 from tutor.edops import nacos_client
 

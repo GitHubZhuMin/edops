@@ -46,11 +46,11 @@ EDOPS_IMAGE_REGISTRY: "zhjx-images.tencentcloudcr.com"
 
 # MySQL 镜像（Open edX 和 zhjx 共享）
 # https://hub.docker.com/_/mysql/tags
-DOCKER_IMAGE_MYSQL: "docker.io/mysql:8.4.0"
+DOCKER_IMAGE_MYSQL: "docker.io/mysql:8.4.7"
 
 # Redis 镜像（Open edX 和 zhjx 共享）
 # https://hub.docker.com/_/redis/tags
-DOCKER_IMAGE_REDIS: "docker.io/redis:7.4.5"
+DOCKER_IMAGE_REDIS: "{{ EDOPS_IMAGE_REGISTRY }}/library/redis:5.0.7"
 
 # MongoDB 镜像（Open edX 专用，zhjx 不使用）
 # https://hub.docker.com/_/mongo/tags
@@ -448,6 +448,17 @@ EDOPS_VERSION_SVC_DEFAULT: "latest"
 EDOPS_VERSION_UI_AUTH: "latest"
 EDOPS_VERSION_UI_CONSOLE: "latest"
 
+# 业务模块 UI 版本
+EDOPS_VERSION_UI_SUP: "latest"
+EDOPS_VERSION_UI_SUP_MOBILE: "latest"
+EDOPS_VERSION_UI_ILIVE: "latest"
+EDOPS_VERSION_UI_CLIENT: "latest"
+EDOPS_VERSION_UI_LIVE: "latest"
+EDOPS_VERSION_UI_YKT_MOBILE: "latest"
+
+# 业务模块服务版本
+EDOPS_VERSION_MEDIA: "latest"
+
 # ----------------------------------------------------------------------------
 # 3.4 zhjx 网络和节点配置
 # ----------------------------------------------------------------------------
@@ -472,9 +483,9 @@ EDOPS_MASTER_NODE_IP: "127.0.0.1"
 #   - 使用绝对路径
 #   - 确保路径存在且文件权限正确
 
-EDOPS_NGINX_CONF: "{{ EDOPS_BASE_PATH }}/nginx.conf"
-EDOPS_CERT_KEY_FILE: "{{ EDOPS_BASE_PATH }}/portal_ly-sky_com.key"
-EDOPS_CERT_CRT_FILE: "{{ EDOPS_BASE_PATH }}/portal_ly-sky_com.crt"
+EDOPS_NGINX_CONF: "../build/nginx/nginx.conf"
+EDOPS_CERT_KEY_FILE: "../build/nginx/portal_ly-sky_com.key"
+EDOPS_CERT_CRT_FILE: "../build/nginx/portal_ly-sky_com.crt"
 EDOPS_MEDIA_CONF_PATH: "{{ EDOPS_BASE_PATH }}/media/conf"
 EDOPS_MEDIA_LOG_PATH: "{{ EDOPS_BASE_PATH }}/media/log"
 EDOPS_MEDIA_WEB_PATH: "{{ EDOPS_BASE_PATH }}/media/www"

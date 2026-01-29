@@ -4,16 +4,13 @@ Nacos 配置管理客户端。
 提供与 Nacos 服务器交互的功能，包括配置的发布、获取、删除等操作。
 """
 
-import base64
 import typing as t
-import urllib.parse
 
 import requests
 
 from tutor import config as tutor_config
 from tutor import env as tutor_env
-from tutor import exceptions
-from tutor import fmt
+from tutor import exceptions, fmt
 
 
 class NacosClient:

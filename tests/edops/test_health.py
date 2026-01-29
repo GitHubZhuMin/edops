@@ -1,5 +1,5 @@
 """Tests for health check functionality."""
-from tutor.edops.health import HealthCheckDef, HealthCheckType, HealthChecker
+from tutor.edops.health import HealthCheckDef, HealthChecker, HealthCheckType
 
 
 def test_health_check_def_creation():

@@ -1,0 +1,26 @@
+services:
+  zhjx-permissions:
+    volumes:
+      - ../../data/zlmediakit/conf:/mounts/zlmediakit/conf
+      - ../../data/zlmediakit/log:/mounts/zlmediakit/log
+      - ../../data/zlmediakit/www:/mounts/zlmediakit/www
+
+  zhjx-zlmediakit:
+    image: "zhjx-images.tencentcloudcr.com/library/zlmediakit/zlmediakit:master-g8a2c28d"
+    init: true
+    hostname: zhjx-zlmediakit
+    restart: unless-stopped
+    user: "1000:1000"
+    ports:
+      - "8080:80"
+      - "554:554"
+      - "1935:1935"
+      - "30000-30100:30000-30100"
+    volumes:
+      - ../../data/zlmediakit/conf:/opt/media/conf
+      - ../../data/zlmediakit/log:/opt/media/log
+      - ../../data/zlmediakit/www:/opt/media/www
+    networks:
+      - zhjx-network
+    depends_on:
+      - zhjx-permissions

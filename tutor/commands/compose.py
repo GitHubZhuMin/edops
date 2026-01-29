@@ -519,11 +519,11 @@ def _ensure_docker_login(config: tutor_config.Config) -> None:
             f"未配置 Docker 仓库认证信息。"
             f"如需从私有仓库 {registry} 拉取镜像，请设置："
         )
-        fmt.echo_info(f"  edops config save --set EDOPS_IMAGE_REGISTRY_USER=用户名")
-        fmt.echo_info(f"  edops config save --set EDOPS_IMAGE_REGISTRY_PASSWORD=密码")
+        fmt.echo_info("  edops config save --set EDOPS_IMAGE_REGISTRY_USER=用户名")
+        fmt.echo_info("  edops config save --set EDOPS_IMAGE_REGISTRY_PASSWORD=密码")
         fmt.echo_info("或使用环境变量：")
-        fmt.echo_info(f"  export EDOPS_IMAGE_REGISTRY_USER=用户名")
-        fmt.echo_info(f"  export EDOPS_IMAGE_REGISTRY_PASSWORD=密码")
+        fmt.echo_info("  export EDOPS_IMAGE_REGISTRY_USER=用户名")
+        fmt.echo_info("  export EDOPS_IMAGE_REGISTRY_PASSWORD=密码")
         return
 
     # 尝试登录

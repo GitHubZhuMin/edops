@@ -2,7 +2,7 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from tutor.edops.image_registry import DeployHistory, DeployRecord
+from tutor.edops.image_registry import DeployHistory
 
 
 def test_deploy_history_add_record():

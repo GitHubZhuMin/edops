@@ -64,6 +64,21 @@ modules:
       - name: ly-ac-auth-ui
         repository: "{{EDOPS_IMAGE_REGISTRY}}/ly-sky.com/ly-ac-auth-ui"
         version_var: EDOPS_VERSION_UI_AUTH
+      - name: ly-ac-client-ui
+        repository: "{{EDOPS_IMAGE_REGISTRY}}/ly-sky.com/ly-ac-client-ui"
+        version_var: EDOPS_VERSION_UI_CLIENT
+      - name: ly-ac-live-ui
+        repository: "{{EDOPS_IMAGE_REGISTRY}}/ly-sky.com/ly-ac-live-ui"
+        version_var: EDOPS_VERSION_UI_LIVE
+      - name: ly-ac-ykt-mobile-ui
+        repository: "{{EDOPS_IMAGE_REGISTRY}}/ly-sky.com/ly-ac-ykt-mobile-ui"
+        version_var: EDOPS_VERSION_UI_YKT_MOBILE
+      - name: ly-ac-interaction-tool-svc
+        repository: "{{EDOPS_IMAGE_REGISTRY}}/ly-sky.com/ly-ac-interaction-tool-svc"
+        version_var: EDOPS_VERSION_SVC_DEFAULT
+      - name: ly-ac-resource-svc
+        repository: "{{EDOPS_IMAGE_REGISTRY}}/ly-sky.com/ly-ac-resource-svc"
+        version_var: EDOPS_VERSION_SVC_DEFAULT
     health_checks:
       - service: ly-ac-gateway-svc
         type: http
@@ -87,15 +102,39 @@ modules:
     template: "local/zhjx-sup.yml"
     target: "local/zhjx-sup.yml"
     depends_on: ["common"]
+    images:
+      - name: ly-ac-teaching-management-svc
+        repository: "{{EDOPS_IMAGE_REGISTRY}}/ly-sky.com/ly-ac-teaching-management-svc"
+        version_var: EDOPS_VERSION_SVC_DEFAULT
+      - name: ly-ac-supervise-ui
+        repository: "{{EDOPS_IMAGE_REGISTRY}}/ly-sky.com/ly-ac-supervise-ui"
+        version_var: EDOPS_VERSION_UI_SUP
+      - name: ly-ac-supervise-mobile-ui
+        repository: "{{EDOPS_IMAGE_REGISTRY}}/ly-sky.com/ly-ac-supervise-mobile-ui"
+        version_var: EDOPS_VERSION_UI_SUP_MOBILE
   zhjx_ilive_ecom:
     required: false
     description: "直播实训电商"
     template: "local/zhjx-ilive-ecom.yml"
     target: "local/zhjx-ilive-ecom.yml"
     depends_on: ["common"]
+    images:
+      - name: ly-ac-ilive-ecom-ui
+        repository: "{{EDOPS_IMAGE_REGISTRY}}/ly-sky.com/ly-ac-ilive-ecom-ui"
+        version_var: EDOPS_VERSION_UI_ILIVE
+      - name: ly-ac-ilive-ecom-tab-svc
+        repository: "{{EDOPS_IMAGE_REGISTRY}}/ly-sky.com/ly-ac-ilive-ecom-tab-svc"
+        version_var: EDOPS_VERSION_SVC_DEFAULT
   zhjx_media:
     required: false
     description: "流媒体处理"
     template: "local/zhjx-media.yml"
     target: "local/zhjx-media.yml"
-    depends_on: ["common"]
+    depends_on: ["common", "zhjx_zlmediakit"]
+    images:
+      - name: media-clip-master
+        repository: "{{EDOPS_IMAGE_REGISTRY}}/ly-sky.com/ly-ac-media-clip-svc-master"
+        version_var: EDOPS_VERSION_MEDIA
+      - name: media-clip-worker
+        repository: "{{EDOPS_IMAGE_REGISTRY}}/ly-sky.com/ly-ac-media-clip-svc-worker"
+        version_var: EDOPS_VERSION_MEDIA

@@ -10,8 +10,8 @@ import importlib_resources
 import jinja2
 
 from tutor import exceptions, fmt, hooks, plugins, utils
-from tutor.edops import modules as edops_modules
 from tutor.__about__ import __app__, __version__, __version_suffix__
+from tutor.edops import modules as edops_modules
 from tutor.types import Config, ConfigValue
 
 TEMPLATES_ROOT = str(importlib_resources.files("tutor") / "templates")

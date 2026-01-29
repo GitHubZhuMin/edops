@@ -7,8 +7,7 @@ import click
 
 from tutor import config as tutor_config
 from tutor import env as tutor_env
-from tutor import fmt
-from tutor import hooks
+from tutor import fmt, hooks
 from tutor.commands import compose
 from tutor.edops import modules as edops_modules
 from tutor.types import Config, get_typed
@@ -220,6 +219,7 @@ def deployment_history(
 ) -> None:
     """查看部署历史记录。"""
     from pathlib import Path
+
     from tutor.edops import image_registry
 
     history_file = Path(context.root) / "deploy-history.yml"
@@ -352,22 +352,21 @@ def rollback(
 def bootstrap(context: compose.LocalContext, preset: t.Optional[str]) -> None:
     """自动执行部署前的准备工作，包括环境检查和基础配置。"""
     from tutor import utils
-    from tutor.commands.config import save as config_save_command
 
-    fmt.echo_title("EdOps 部署准备工具")
+    fmt.echo(fmt.title("EdOps 部署准备工具"))
 
     # 1. 环境检查
     fmt.echo_info("正在检查运行环境...")
     try:
         utils.check_output("docker", "info")
-        fmt.echo(f"  {fmt.success('✓')} Docker 已安装")
+        fmt.echo(f"  {click.style('✓', fg='green')} 已安装 Docker")
     except Exception:
         fmt.echo_error("  ✗ 未检测到 Docker，请先安装 Docker。")
         return
 
     try:
         utils.check_output("docker", "compose", "version")
-        fmt.echo(f"  {fmt.success('✓')} Docker Compose 已安装")
+        fmt.echo(f"  {click.style('✓', fg='green')} 已安装 Docker Compose")
     except Exception:
         fmt.echo_error("  ✗ 未检测到 Docker Compose，请先安装 Docker Compose V2。")
         return
@@ -382,7 +381,7 @@ def bootstrap(context: compose.LocalContext, preset: t.Optional[str]) -> None:
     # 设置检测到的 IP
     if not config.get("EDOPS_MASTER_NODE_IP") or config.get("EDOPS_MASTER_NODE_IP") == "127.0.0.1":
         config["EDOPS_MASTER_NODE_IP"] = detected_ip
-        fmt.echo(f"  {fmt.success('✓')} 已自动设置 EDOPS_MASTER_NODE_IP={detected_ip}")
+        fmt.echo(f"  {click.style('✓', fg='green')} 已自动设置 EDOPS_MASTER_NODE_IP={detected_ip}")
 
     # 默认启用基础模块
     if "EDOPS_ENABLED_MODULES" not in config:
@@ -394,14 +393,14 @@ def bootstrap(context: compose.LocalContext, preset: t.Optional[str]) -> None:
         fmt.echo_info(f"正在应用预设: {preset}...")
         try:
             presets.apply_preset(config, preset)
-            fmt.echo(f"  {fmt.success('✓')} 已成功应用 {preset} 预设")
+            fmt.echo(f"  {click.style('✓', fg='green')} 已成功应用 {preset} 预设")
         except Exception as e:
             fmt.echo_error(f"  ✗ 应用预设失败: {e}")
             return
 
     # 保存配置
     tutor_config.save_config_file(context.root, config)
-    fmt.echo_info(f"\n{fmt.success('✓')} 基础配置已完成！")
+    fmt.echo_info(f"\n{click.style('✓', fg='green')} 基础配置已完成！")
     fmt.echo_info("接下来您可以运行以下命令开始部署：")
     fmt.echo(fmt.command("edops local launch"))
 

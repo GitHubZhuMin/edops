@@ -1,0 +1,79 @@
+services:
+
+  # Set bind-mounted folder ownership
+  permissions:
+    image: zhjx-images.tencentcloudcr.com/library/permissions:1.0.0
+    restart: on-failure
+    entrypoint: []
+    command: ["sh", "/usr/local/bin/setowners.sh"]
+
+    volumes:
+      # Command script
+      - ../apps/permissions/setowners.sh:/usr/local/bin/setowners.sh:ro
+      # Bind-mounted volumes to set ownership
+
+      - ../../data/mongodb:/mounts/mongodb
+      - ../../data/mysql:/mounts/mysql
+      - ../../data/meilisearch:/mounts/meilisearch
+      - ../../data/redis:/mounts/redis
+
+
+  ############# External services
+
+  mongodb:
+    image: docker.io/mongo:7.0.7
+    # Use WiredTiger in all environments, just like at edx.org
+    command: mongod --storageEngine wiredTiger
+    restart: unless-stopped
+    user: "999:999"
+    volumes:
+      - ../../data/mongodb:/data/db
+    depends_on:
+      - permissions
+
+  mysql:
+    image: docker.io/mysql:8.4.7
+    command: >
+      mysqld
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --binlog-expire-logs-seconds=259200
+      --mysql-native-password=ON
+    restart: unless-stopped
+    user: "999:999"
+    volumes:
+      - ../../data/mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "uDl4rgWV"
+
+  meilisearch:
+    image: docker.io/getmeili/meilisearch:v1.8.4
+    environment:
+      MEILI_MASTER_KEY: "Tjgcpmkvopw1z7F9aAI25K2g"
+    volumes:
+      - ../../data/meilisearch:/meili_data
+    restart: unless-stopped
+    user: "1000:1000"
+    depends_on:
+      - permissions
+
+  redis:
+    image: zhjx-images.tencentcloudcr.com/library/redis:5.0.7
+    working_dir: /openedx/redis/data
+    user: "1000:1000"
+    volumes:
+      - ../apps/redis/redis.conf:/openedx/redis/config/redis.conf:ro
+      - ../../data/redis:/openedx/redis/data
+    command: redis-server /openedx/redis/config/redis.conf
+    restart: unless-stopped
+    depends_on:
+      - permissions
+
+  smtp:
+    image: docker.io/devture/exim-relay:4.96-r1-0
+    restart: unless-stopped
+    user: "100:101"
+    environment:
+      HOSTNAME: "www.myopenedx.com"
+
+  ############# LMS and CMS
