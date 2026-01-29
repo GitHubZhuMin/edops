@@ -81,3 +81,21 @@ modules:
         host: "localhost"
         port: 8080
         timeout: 30
+  zhjx_sup:
+    required: false
+    description: "AI 督导系统"
+    template: "local/zhjx-sup.yml"
+    target: "local/zhjx-sup.yml"
+    depends_on: ["common"]
+  zhjx_ilive_ecom:
+    required: false
+    description: "直播实训电商"
+    template: "local/zhjx-ilive-ecom.yml"
+    target: "local/zhjx-ilive-ecom.yml"
+    depends_on: ["common"]
+  zhjx_media:
+    required: false
+    description: "流媒体处理"
+    template: "local/zhjx-media.yml"
+    target: "local/zhjx-media.yml"
+    depends_on: ["common"]

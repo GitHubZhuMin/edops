@@ -193,12 +193,21 @@ def _synchronize_module_flags(config: Config) -> None:
     enabled_modules = get_typed(config, "EDOPS_ENABLED_MODULES", list, [])
 
     # Sync from legacy RUN_* flags to EDOPS_ENABLED_MODULES
-    if config.get("RUN_ZHJX_ZLMEDIAKIT") and "zhjx_zlmediakit" not in enabled_modules:
-        enabled_modules.append("zhjx_zlmediakit")
+    legacy_map = {
+        "RUN_ZHJX_ZLMEDIAKIT": "zhjx_zlmediakit",
+        "RUN_ZHJX_SUP": "zhjx_sup",
+        "RUN_ZHJX_ILIVE_ECOM": "zhjx_ilive_ecom",
+        "RUN_ZHJX_MEDIA": "zhjx_media",
+    }
+
+    for flag, module in legacy_map.items():
+        if config.get(flag) and module not in enabled_modules:
+            enabled_modules.append(module)
 
     # Sync from EDOPS_ENABLED_MODULES to legacy RUN_* flags
-    if "zhjx_zlmediakit" in enabled_modules:
-        config["RUN_ZHJX_ZLMEDIAKIT"] = True
+    for flag, module in legacy_map.items():
+        if module in enabled_modules:
+            config[flag] = True
 
     # Update the config with the potentially modified list
     config["EDOPS_ENABLED_MODULES"] = enabled_modules
