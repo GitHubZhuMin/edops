@@ -346,8 +346,69 @@ def rollback(
     fmt.echo_info(f"  镜像: {target_record.image}:{target_record.tag}")
 
 
+@click.command(name="bootstrap", help="一键快速部署准备工具")
+@click.option("--preset", help="使用预设配置 (minimal/standard/full)")
+@click.pass_obj
+def bootstrap(context: compose.LocalContext, preset: t.Optional[str]) -> None:
+    """自动执行部署前的准备工作，包括环境检查和基础配置。"""
+    from tutor import utils
+    from tutor.commands.config import save as config_save_command
+
+    fmt.echo_title("EdOps 部署准备工具")
+
+    # 1. 环境检查
+    fmt.echo_info("正在检查运行环境...")
+    try:
+        utils.check_output("docker", "info")
+        fmt.echo(f"  {fmt.success('✓')} Docker 已安装")
+    except Exception:
+        fmt.echo_error("  ✗ 未检测到 Docker，请先安装 Docker。")
+        return
+
+    try:
+        utils.check_output("docker", "compose", "version")
+        fmt.echo(f"  {fmt.success('✓')} Docker Compose 已安装")
+    except Exception:
+        fmt.echo_error("  ✗ 未检测到 Docker Compose，请先安装 Docker Compose V2。")
+        return
+
+    # 2. 自动检测 IP
+    detected_ip = utils.get_host_ip()
+    fmt.echo_info(f"检测到本机 IP: {detected_ip}")
+
+    # 3. 基础配置
+    config = tutor_config.load_minimal(context.root)
+
+    # 设置检测到的 IP
+    if not config.get("EDOPS_MASTER_NODE_IP") or config.get("EDOPS_MASTER_NODE_IP") == "127.0.0.1":
+        config["EDOPS_MASTER_NODE_IP"] = detected_ip
+        fmt.echo(f"  {fmt.success('✓')} 已自动设置 EDOPS_MASTER_NODE_IP={detected_ip}")
+
+    # 默认启用基础模块
+    if "EDOPS_ENABLED_MODULES" not in config:
+        config["EDOPS_ENABLED_MODULES"] = []
+
+    # 处理预设
+    if preset:
+        from tutor.edops import presets
+        fmt.echo_info(f"正在应用预设: {preset}...")
+        try:
+            presets.apply_preset(config, preset)
+            fmt.echo(f"  {fmt.success('✓')} 已成功应用 {preset} 预设")
+        except Exception as e:
+            fmt.echo_error(f"  ✗ 应用预设失败: {e}")
+            return
+
+    # 保存配置
+    tutor_config.save_config_file(context.root, config)
+    fmt.echo_info(f"\n{fmt.success('✓')} 基础配置已完成！")
+    fmt.echo_info("接下来您可以运行以下命令开始部署：")
+    fmt.echo(fmt.command("edops local launch"))
+
+
 compose.add_commands(local)
 local.add_command(edops_status)
 local.add_command(healthcheck)
 local.add_command(deployment_history)
 local.add_command(rollback)
+local.add_command(bootstrap)

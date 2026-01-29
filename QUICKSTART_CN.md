@@ -151,7 +151,17 @@ source ~/.zshrc
 
 ## 首次部署流程
 
-### 单环境部署
+### 极速一键部署（推荐）
+
+```bash
+# 1. 自动环境检查、IP 检测及应用预设
+edops local bootstrap --preset standard
+
+# 2. 启动平台
+edops local launch --pullimages
+```
+
+### 标准部署流程
 
 ```bash
 # 1. 激活环境

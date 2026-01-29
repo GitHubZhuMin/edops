@@ -1,0 +1,3 @@
+# 标准配置：包含基础、通用及流媒体模块
+EDOPS_ENABLED_MODULES:
+  - zhjx_zlmediakit

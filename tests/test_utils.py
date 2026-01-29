@@ -241,6 +241,11 @@ class UtilsTests(unittest.TestCase):
         self.assertFalse(utils.is_http("home/user/"))
         self.assertFalse(utils.is_http("http-home/user/"))
 
+    def test_get_host_ip(self) -> None:
+        ip = utils.get_host_ip()
+        self.assertIsInstance(ip, str)
+        self.assertIn(".", ip)
+
     def test_format_table(self) -> None:
         rows: List[Tuple[str, ...]] = [
             ("a", "xyz", "value 1"),

@@ -229,6 +229,11 @@ class ConfigListKeyValParamType(ConfigKeyValParamType):
     help="Remove everything in the env directory before save",
 )
 @click.option(
+    "--preset",
+    "preset_name",
+    help="应用预设配置 (minimal/standard/full)",
+)
+@click.option(
     "--init",
     "init_env",
     is_flag=True,
@@ -245,6 +250,7 @@ def save(
     env_only: bool,
     clean_env: bool,
     init_env: bool,
+    preset_name: t.Optional[str] = None,
 ) -> None:
     # --init is equivalent to --clean
     if init_env:
@@ -264,6 +270,11 @@ def save(
             )
             if run_clean:
                 env.delete_env_dir(context.root)
+
+    if preset_name:
+        from tutor.edops import presets
+        fmt.echo_info(f"正在应用预设配置: {preset_name}")
+        presets.apply_preset(config, preset_name)
 
     if interactive:
         interactive_config.ask_questions(config)

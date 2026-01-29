@@ -347,6 +347,24 @@ def is_http(url: str) -> bool:
     return re.match(r"^https?://", url) is not None
 
 
+def get_host_ip() -> str:
+    """
+    尝试获取主机的局域网 IP 地址。
+    """
+    import socket
+
+    try:
+        # 创建一个 UDP 套接字，不需要真正连接
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        # 连接到一个外部地址（谷歌公共 DNS），不会发送任何数据
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"
+
+
 def format_table(rows: List[Tuple[str, ...]], separator: str = "\t") -> str:
     """
     Format a list of values as a tab-separated table. Column sizes are determined such

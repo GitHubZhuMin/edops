@@ -1,0 +1,2 @@
+# 最小化配置：仅包含基础和通用模块
+EDOPS_ENABLED_MODULES: []
