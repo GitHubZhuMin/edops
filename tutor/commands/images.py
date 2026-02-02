@@ -347,34 +347,15 @@ class ImageNotFoundError(exceptions.TutorError):
 @click.option(
     "--module",
     "module_filter",
-    help="按模块名称过滤",
+    help="按模块名称过滤（当前模板开关模式下无集中列表）",
 )
 @click.pass_obj
 def edops_list(context: Context, module_filter: t.Optional[str]) -> None:
-    """列出所有 EdOps 模块镜像及其当前版本。"""
-    from tutor.edops import modules as edops_modules
+    """列出 EdOps 模块镜像及其当前版本（占位提示）。"""
+    _ = context, module_filter
+    fmt.echo_info("模块镜像清单已改由模板开关控制，当前未维护集中列表。")
+    fmt.echo_info("如需查询版本，请使用: edops images versions <service>")
 
-    config = tutor_config.load(context.root)
-    modules_list = edops_modules.get_enabled_modules(config)
-
-    if module_filter:
-        modules_list = [m for m in modules_list if m.name == module_filter]
-        if not modules_list:
-            fmt.echo_error(f"模块 '{module_filter}' 未找到或未启用")
-            return
-
-    fmt.echo_info("EdOps 模块镜像:\n")
-    for module in modules_list:
-        if not module.images:
-            continue
-
-        fmt.echo(f"\n{module.name}:")
-        for image in module.images:
-            # 渲染仓库和版本变量以获取实际值
-            repo = tutor_env.render_str(config, image.repository)
-            version_var = image.version_var
-            version = config.get(version_var, "unknown")
-            fmt.echo(f"  {image.name:30} {repo}:{version}")
 
 
 @click.command(name="versions", help="列出服务的可用版本")

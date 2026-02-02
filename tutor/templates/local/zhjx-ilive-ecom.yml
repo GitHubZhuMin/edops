@@ -1,3 +1,44 @@
-# Placeholder for zhjx-ilive-ecom module
-version: '3.8'
-services: {}
+{% if RUN_ZHJX_ILIVE_ECOM %}
+x-ui-environment:
+  &ui-environment
+  spring.cloud.inetutils.preferred-networks: 10.10.0
+  API_GATEWAY_URL: "{{ EDOPS_API_GATEWAY_URL }}"
+  SCHOOL_ID: "{{ EDOPS_SCHOOL_ID }}"
+  API_TENANT_URL: "http://{{ EDOPS_MASTER_NODE_IP }}:{{ EDOPS_API_TENANT_PORT }}"
+  API_OBJECT_STORAGE_URL: "http://{{ EDOPS_MASTER_NODE_IP }}:{{ EDOPS_API_OBJECT_STORAGE_PORT }}"
+  ISPOT_APP_SOURCE: "{{ EDOPS_ISPOT_APP_SOURCE }}"
+
+x-svc-environment:
+  &svc-environment
+  discovery: "{{ EDOPS_SVC_DISCOVERY }}"
+  nacosGroup: "{{ EDOPS_SVC_NACOS_GROUP }}"
+  mysqlHost: "{{ EDOPS_MYSQL_HOST }}"
+  mysqlPort: {{ EDOPS_MYSQL_PORT }}
+  mysqlUser: "{{ EDOPS_MYSQL_ROOT_USER }}"
+  mysqlPassword: "{{ EDOPS_MYSQL_ROOT_PASSWORD }}"
+  serverAddr: "{{ EDOPS_NACOS_SERVER_ADDR }}"
+
+services:
+  # 产教融合 web 端
+  ly-ac-ilive-ecom-ui:
+    image: {{ EDOPS_IMAGE_REGISTRY }}/ly-sky.com/ly-ac-ilive-ecom-ui:{{ EDOPS_VERSION_UI_ILIVE }}
+    init: true
+    restart: unless-stopped
+    environment: *ui-environment
+    networks:
+      - {{ EDOPS_NETWORK_NAME }}
+    depends_on:
+      - zhjx-nacos
+
+  ly-ac-ilive-ecom-tab-svc:
+    image: {{ EDOPS_IMAGE_REGISTRY }}/ly-sky.com/ly-ac-ilive-ecom-tab-svc:{{ EDOPS_VERSION_SVC_DEFAULT }}
+    init: true
+    restart: unless-stopped
+    environment: *svc-environment
+    networks:
+      - {{ EDOPS_NETWORK_NAME }}
+    entrypoint: [""]
+    command: ["sh", "-c", "java -Xms1G -Xmx2G -XX:MaxMetaspaceSize=256M -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp -XX:+UseStringDeduplication -jar /usr/local/app.jar"]
+    depends_on:
+      - zhjx-nacos
+{% endif %}

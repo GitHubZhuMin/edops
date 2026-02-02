@@ -1,3 +1,4 @@
+{% if RUN_ZHJX_BASE %}
 services:
 
   # Set bind-mounted folder ownership for zhjx services
@@ -62,6 +63,27 @@ services:
       - {{ EDOPS_NETWORK_NAME }}
     depends_on:
       - zhjx-permissions
+
+  {% if RUN_ZHJX_MYSQL %}
+  zhjx-mysql:
+    image: mysql:8.4.7
+    container_name: zhjx-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "{{ EDOPS_MYSQL_ROOT_PASSWORD }}"
+    networks:
+      - {{ EDOPS_NETWORK_NAME }}
+    ports:
+      - "{{ EDOPS_MYSQL_PORT }}:3306"
+    volumes:
+      - /opt/1panel/docker/compose/zhjx-mysql/data:/var/lib/mysql
+      - /opt/1panel/docker/compose/zhjx-mysql/conf/my.cnf:/etc/my.cnf
+      - /opt/1panel/docker/compose/zhjx-mysql/log:/var/log/mysql
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - zhjx-permissions
+  {% endif %}
 
   zhjx-nacos:
     image: {{ EDOPS_IMAGE_REGISTRY }}/library/nacos-server:2.0.2
@@ -196,5 +218,5 @@ services:
 networks:
   {{ EDOPS_NETWORK_NAME }}:
     external: true
-
+{% endif %}
 

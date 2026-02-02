@@ -17,7 +17,6 @@ from tutor.commands.context import BaseTaskContext
 from tutor.commands.upgrade import OPENEDX_RELEASE_NAMES
 from tutor.commands.upgrade.compose import upgrade_from
 from tutor.core.hooks import Filter  # noqa: F401
-from tutor.edops import modules as edops_modules
 from tutor.exceptions import TutorError
 from tutor.tasks import BaseComposeTaskRunner
 from tutor.types import Config
@@ -163,12 +162,10 @@ def launch(
 
     # 运行健康检查
     if not no_health_check:
-        enabled_modules = edops_modules.get_enabled_modules(config)
-        if enabled_modules:
-            click.echo(fmt.title("运行健康检查"))
-            from tutor.commands.local import healthcheck
+        click.echo(fmt.title("运行健康检查"))
+        from tutor.commands.local import healthcheck
 
-            context.invoke(healthcheck)
+        context.invoke(healthcheck)
 
     # 打印面向用户的应用 URL
     public_app_hosts = ""
@@ -243,19 +240,8 @@ def interactive_configuration(
 ) -> None:
     config = tutor_config.load_minimal(context.obj.root)
     if interactive:
-        # 检查是否启用了 EdOps 模块
-        enabled_modules = edops_modules.get_enabled_modules(config)
-        if enabled_modules:
-            # 使用 EdOps 专用配置
-            click.echo(fmt.title("交互式平台配置"))
-            _ask_edops_questions(config, run_for_prod=run_for_prod)
-        else:
-            # 使用 Open edX 配置（向后兼容）
-            click.echo(fmt.title("交互式平台配置"))
-            interactive_config.ask_questions(
-                config,
-                run_for_prod=run_for_prod,
-            )
+        click.echo(fmt.title("交互式平台配置"))
+        _ask_edops_questions(config, run_for_prod=run_for_prod)
     tutor_config.save_config_file(context.obj.root, config)
     config = tutor_config.load_full(context.obj.root)
     tutor_env.save(context.obj.root, config)
@@ -613,15 +599,21 @@ def _ask_edops_questions(config: tutor_config.Config, run_for_prod: t.Optional[b
     config["EDOPS_MASTER_NODE_IP"] = master_ip
 
     # 询问启用的模块
-    enabled = config.get("EDOPS_ENABLED_MODULES", [])
-    if not enabled:
-        fmt.echo_info("可选模块（base 和 common 模块始终启用）：")
-        available_modules = ["zhjx_zlmediakit", "zhjx_sup", "zhjx_ilive_ecom", "zhjx_media"]
-        for module in available_modules:
-            if click.confirm(f"  是否启用 {module} 模块？", default=False):
-                enabled.append(module)
-        if enabled:
-            config["EDOPS_ENABLED_MODULES"] = enabled
+    fmt.echo_info("可选模块（base 和 common 模块始终启用）：")
+    optional_flags = [
+        ("zhjx_zlmediakit", "RUN_ZHJX_ZLMEDIAKIT"),
+        ("zhjx_sup", "RUN_ZHJX_SUP"),
+        ("zhjx_ilive_ecom", "RUN_ZHJX_ILIVE_ECOM"),
+        ("zhjx_media", "RUN_ZHJX_MEDIA"),
+        ("zhjx_ykt", "RUN_ZHJX_YKT"),
+    ]
+    for module_name, flag in optional_flags:
+        default_value = bool(config.get(flag, defaults.get(flag, False)))
+        config[flag] = click.confirm(
+            fmt.question(f"是否启用 {module_name} 模块？"),
+            default=default_value,
+            prompt_suffix=" ",
+        )
 
     # 执行插件钩子
     hooks.Actions.CONFIG_INTERACTIVE.do(config)

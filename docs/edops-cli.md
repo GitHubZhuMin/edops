@@ -175,11 +175,10 @@ edops local rollback common --version v1.2.3
 
 ### edops images list
 
-列出所有模块的镜像及版本。
+列出模块镜像占位提示（模块镜像清单改由模板开关控制）。
 
 ```bash
 edops images list
-edops images list --module common
 ```
 
 ### edops images versions
@@ -313,18 +312,8 @@ EDOPS_NETWORK_NAME: zhjx-network
 EDOPS_VERSION_SVC_DEFAULT: latest
 EDOPS_VERSION_UI_CONSOLE: latest
 EDOPS_VERSION_UI_AUTH: latest
-EDOPS_ENABLED_MODULES:
-  - zhjx_zlmediakit
+RUN_ZHJX_ZLMEDIAKIT: true
 ```
-
-### edops-modules.yml
-
-模块定义文件，位于 `tutor/templates/config/edops-modules.yml`。
-
-定义了所有模块的元数据：
-- 依赖关系
-- 健康检查
-- 镜像映射
 
 ### deploy-history.yml
 
@@ -419,4 +408,3 @@ EdOps 基于 Tutor 构建，遵循以下开发规范：
 - 遵循 PEP 8 代码风格
 
 详见 `CONTRIBUTING.md`。
-

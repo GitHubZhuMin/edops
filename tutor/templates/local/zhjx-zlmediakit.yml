@@ -1,3 +1,4 @@
+{% if RUN_ZHJX_ZLMEDIAKIT %}
 services:
   zhjx-permissions:
     volumes:
@@ -24,3 +25,4 @@ services:
       - {{ EDOPS_NETWORK_NAME }}
     depends_on:
       - zhjx-permissions
+{% endif %}

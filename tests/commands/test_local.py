@@ -69,3 +69,24 @@ class LocalTests(unittest.TestCase, TestCommandMixin):
                         "cp --recursive --preserve /openedx/venv /tmp/mount/venv2",
                         mock_docker_compose.call_args[0],
                     )
+
+    def test_local_bootstrap_copies_nginx_assets(self) -> None:
+        with temporary_root() as root:
+            base_path = os.path.join(root, "edops-base")
+            result = self.invoke_in_root(
+                root, ["config", "save", "--set", f"EDOPS_BASE_PATH={base_path}"]
+            )
+            self.assertIsNone(result.exception)
+
+            with patch("tutor.utils.check_output") as mock_check_output:
+                mock_check_output.return_value = ""
+                result = self.invoke_in_root(root, ["local", "bootstrap"])
+                self.assertIsNone(result.exception)
+                self.assertEqual(0, result.exit_code)
+
+            for filename in (
+                "nginx.conf",
+                "portal_ly-sky_com.key",
+                "portal_ly-sky_com.crt",
+            ):
+                self.assertTrue(os.path.exists(os.path.join(base_path, filename)))

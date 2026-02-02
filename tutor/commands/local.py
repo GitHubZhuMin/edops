@@ -1,16 +1,18 @@
 from __future__ import annotations
 
 import json
+import shutil
 import typing as t
+from pathlib import Path
 
 import click
+import importlib_resources
 
 from tutor import config as tutor_config
 from tutor import env as tutor_env
 from tutor import fmt
 from tutor import hooks
 from tutor.commands import compose
-from tutor.edops import modules as edops_modules
 from tutor.types import Config, get_typed
 
 
@@ -21,25 +23,25 @@ class LocalTaskRunner(compose.ComposeTaskRunner):
         """
         super().__init__(root, config)
         self.project_name = get_typed(self.config, "LOCAL_PROJECT_NAME", str)
-        module_targets = edops_modules.get_enabled_module_targets(self.config)
-        if module_targets:
-            self.docker_compose_files = [
-                tutor_env.pathjoin(self.root, target) for target in module_targets
-            ]
-            self.docker_compose_job_files = []
-        else:
-            self.docker_compose_files += [
-                tutor_env.pathjoin(self.root, "local", "docker-compose.yml"),
-                tutor_env.pathjoin(self.root, "local", "docker-compose.prod.yml"),
-                tutor_env.pathjoin(self.root, "local", "docker-compose.override.yml"),
-                tutor_env.pathjoin(
-                    self.root, "local", "docker-compose.prod.override.yml"
-                ),
-            ]
-            self.docker_compose_job_files += [
-                tutor_env.pathjoin(self.root, "local", "docker-compose.jobs.yml"),
-                tutor_env.pathjoin(self.root, "local", "docker-compose.jobs.override.yml"),
-            ]
+        self.docker_compose_files += [
+            tutor_env.pathjoin(self.root, "local", "docker-compose.yml"),
+            tutor_env.pathjoin(self.root, "local", "docker-compose.prod.yml"),
+            tutor_env.pathjoin(self.root, "local", "docker-compose.override.yml"),
+            tutor_env.pathjoin(
+                self.root, "local", "docker-compose.prod.override.yml"
+            ),
+            tutor_env.pathjoin(self.root, "local", "zhjx-base.yml"),
+            tutor_env.pathjoin(self.root, "local", "zhjx-common.yml"),
+            tutor_env.pathjoin(self.root, "local", "zhjx-zlmediakit.yml"),
+            tutor_env.pathjoin(self.root, "local", "zhjx-ilive-ecom.yml"),
+            tutor_env.pathjoin(self.root, "local", "zhjx-sup.yml"),
+            tutor_env.pathjoin(self.root, "local", "zhjx-media.yml"),
+            tutor_env.pathjoin(self.root, "local", "zhjx-ykt.yml"),
+        ]
+        self.docker_compose_job_files += [
+            tutor_env.pathjoin(self.root, "local", "docker-compose.jobs.yml"),
+            tutor_env.pathjoin(self.root, "local", "docker-compose.jobs.override.yml"),
+        ]
 
 
 class LocalContext(compose.BaseComposeContext):
@@ -101,10 +103,6 @@ def edops_status(
         fmt.echo_info("没有运行中的容器")
         return
 
-    # 按模块分组
-    modules_list = edops_modules.get_enabled_modules(config)
-    module_names = {m.name for m in modules_list}
-
     if output_format == "json":
         click.echo(json.dumps(containers, indent=2))
     else:
@@ -114,15 +112,7 @@ def edops_status(
             name = container.get("Service", container.get("Name", ""))
             state = container.get("State", "unknown")
             status = container.get("Status", "")
-
-            # 尝试确定模块
-            detected_module = "unknown"
-            for mod_name in module_names:
-                if mod_name.replace("_", "-") in name:
-                    detected_module = mod_name
-                    break
-
-            if module_filter and detected_module != module_filter:
+            if module_filter and module_filter not in name:
                 continue
 
             status_icon = "✓" if state == "running" else "✗"
@@ -136,62 +126,7 @@ def healthcheck(
     context: compose.LocalContext, module_name: t.Optional[str]
 ) -> None:
     """对指定模块或所有模块运行健康检查。"""
-    from tutor.edops import health as edops_health
-
-    config = tutor_config.load(context.root)
-
-    if module_name:
-        # 检查特定模块
-        all_modules = edops_modules._load_modules()
-        if module_name not in all_modules:
-            available = ", ".join(all_modules.keys())
-            fmt.echo_error(
-                f"未知模块 '{module_name}'。可用: {available}"
-            )
-            return
-
-        modules_to_check = [all_modules[module_name]]
-    else:
-        # 检查所有已启用的模块
-        modules_to_check = edops_modules.get_enabled_modules(config)
-
-    checker = edops_health.HealthChecker(verbose=True)
-    all_passed = True
-
-    for module in modules_to_check:
-        if not hasattr(module, "health_checks") or not module.health_checks:
-            fmt.echo_info(f"{module.name} 没有定义健康检查")
-            continue
-
-        fmt.echo_info(f"\n正在检查 {module.name}...")
-        for check_def in module.health_checks:
-            # 渲染健康检查中的模板变量
-            rendered_url = None
-            if check_def.url:
-                rendered_url = tutor_env.render_str(config, check_def.url)
-
-            rendered_host = None
-            if check_def.host:
-                rendered_host = tutor_env.render_str(config, check_def.host)
-
-            rendered_check = edops_health.HealthCheckDef(
-                service=check_def.service,
-                type=check_def.type,
-                url=rendered_url,
-                host=rendered_host,
-                port=check_def.port,
-                timeout=check_def.timeout,
-                interval=check_def.interval,
-                retries=check_def.retries,
-            )
-            passed = checker.check(rendered_check)
-            if not passed:
-                all_passed = False
-
-    if all_passed:
-        fmt.echo_info("\n✓ 所有健康检查通过")
-    else:
-        fmt.echo_error("\n✗ 部分健康检查失败")
+    fmt.echo_info("当前未配置模块级健康检查，请使用 docker compose 或服务自身探针检查。")
 
 
 @click.command(name="history", help="查看部署历史")
@@ -310,20 +245,7 @@ def rollback(
         f"将 {module_name} 从 {current_version} 回滚到 {target_record.tag}"
     )
 
-    # 更新 config.yml
-    all_modules = edops_modules._load_modules()
-    module_def = all_modules.get(module_name)
     config_updated = False
-    if module_def:
-        for img in module_def.images:
-            if img.name == target_record.service:
-                config[img.version_var] = target_record.tag
-                tutor_config.save_config_file(context.root, config)
-                config_updated = True
-                fmt.echo_info(
-                    f"✓ 已自动更新配置项 {img.version_var}={target_record.tag}"
-                )
-                break
 
     # 记录回滚操作
     history.add_record(
@@ -354,20 +276,20 @@ def bootstrap(context: compose.LocalContext, preset: t.Optional[str]) -> None:
     from tutor import utils
     from tutor.commands.config import save as config_save_command
 
-    fmt.echo_title("EdOps 部署准备工具")
+    fmt.echo(fmt.title("EdOps 部署准备工具"))
 
     # 1. 环境检查
     fmt.echo_info("正在检查运行环境...")
     try:
         utils.check_output("docker", "info")
-        fmt.echo(f"  {fmt.success('✓')} Docker 已安装")
+        fmt.echo("  ✓ Docker 已安装")
     except Exception:
         fmt.echo_error("  ✗ 未检测到 Docker，请先安装 Docker。")
         return
 
     try:
         utils.check_output("docker", "compose", "version")
-        fmt.echo(f"  {fmt.success('✓')} Docker Compose 已安装")
+        fmt.echo("  ✓ Docker Compose 已安装")
     except Exception:
         fmt.echo_error("  ✗ 未检测到 Docker Compose，请先安装 Docker Compose V2。")
         return
@@ -382,11 +304,7 @@ def bootstrap(context: compose.LocalContext, preset: t.Optional[str]) -> None:
     # 设置检测到的 IP
     if not config.get("EDOPS_MASTER_NODE_IP") or config.get("EDOPS_MASTER_NODE_IP") == "127.0.0.1":
         config["EDOPS_MASTER_NODE_IP"] = detected_ip
-        fmt.echo(f"  {fmt.success('✓')} 已自动设置 EDOPS_MASTER_NODE_IP={detected_ip}")
-
-    # 默认启用基础模块
-    if "EDOPS_ENABLED_MODULES" not in config:
-        config["EDOPS_ENABLED_MODULES"] = []
+        fmt.echo(f"  ✓ 已自动设置 EDOPS_MASTER_NODE_IP={detected_ip}")
 
     # 处理预设
     if preset:
@@ -394,16 +312,61 @@ def bootstrap(context: compose.LocalContext, preset: t.Optional[str]) -> None:
         fmt.echo_info(f"正在应用预设: {preset}...")
         try:
             presets.apply_preset(config, preset)
-            fmt.echo(f"  {fmt.success('✓')} 已成功应用 {preset} 预设")
+            fmt.echo(f"  ✓ 已成功应用 {preset} 预设")
         except Exception as e:
             fmt.echo_error(f"  ✗ 应用预设失败: {e}")
             return
 
     # 保存配置
     tutor_config.save_config_file(context.root, config)
-    fmt.echo_info(f"\n{fmt.success('✓')} 基础配置已完成！")
+
+    _ensure_nginx_assets(config)
+    fmt.echo_info("\n✓ 基础配置已完成！")
     fmt.echo_info("接下来您可以运行以下命令开始部署：")
     fmt.echo(fmt.command("edops local launch"))
+
+
+def _ensure_nginx_assets(config: Config) -> None:
+    base_path = Path(get_typed(config, "EDOPS_BASE_PATH", str, "/home/zhjx"))
+    nginx_conf_value = get_typed(config, "EDOPS_NGINX_CONF", str, "")
+    cert_key_value = get_typed(config, "EDOPS_CERT_KEY_FILE", str, "")
+    cert_crt_value = get_typed(config, "EDOPS_CERT_CRT_FILE", str, "")
+
+    nginx_conf = Path(nginx_conf_value) if nginx_conf_value else base_path / "nginx.conf"
+    cert_key = Path(cert_key_value) if cert_key_value else base_path / "portal_ly-sky_com.key"
+    cert_crt = Path(cert_crt_value) if cert_crt_value else base_path / "portal_ly-sky_com.crt"
+
+    sources_root = importlib_resources.files("tutor") / "templates" / "build" / "nginx"
+    if not sources_root.exists():
+        fmt.echo_info("未找到默认 Nginx 配置目录，跳过初始化。")
+        return
+
+    targets = {
+        "nginx.conf": nginx_conf,
+        "portal_ly-sky_com.key": cert_key,
+        "portal_ly-sky_com.crt": cert_crt,
+    }
+
+    try:
+        base_path.mkdir(parents=True, exist_ok=True)
+    except PermissionError:
+        fmt.echo_error(
+            f"无法创建 Nginx 配置目录 {base_path}，请手动初始化证书与配置文件。"
+        )
+        return
+
+    for filename, target in targets.items():
+        if not target:
+            continue
+        source = sources_root / filename
+        if target.exists():
+            continue
+        try:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+            fmt.echo_info(f"  ✓ 已写入 {target}")
+        except PermissionError:
+            fmt.echo_error(f"无法写入 {target}，请检查权限。")
 
 
 compose.add_commands(local)

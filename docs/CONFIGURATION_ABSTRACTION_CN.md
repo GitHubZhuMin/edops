@@ -144,7 +144,7 @@ config.yml (用户覆盖)
 ### 5. 模块配置（Modules）
 
 #### 5.1 模块启用
-- `EDOPS_ENABLED_MODULES`: 启用的模块列表，默认为空数组 `[]`
+- `RUN_ZHJX_*`: 业务模块启用开关，默认关闭可选模块
   - 可选值：`zhjx_zlmediakit`, `zhjx_sup`, `zhjx_ilive_ecom`, `zhjx_media`, `zhjx_ykt`
   - `base` 和 `common` 模块始终启用，无需在此列表中
 
@@ -328,4 +328,3 @@ edops config validate
 4. ✅ 创建配置文档，说明各配置项的用途和默认值
 5. ⏳ 创建配置验证机制
 6. ⏳ 确保 dev/local/k8s 环境配置一致性（通过变量抽象实现）
-
