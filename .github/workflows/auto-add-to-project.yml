@@ -13,8 +13,13 @@ jobs:
   add-to-project:
     name: Add issue and bugs to project
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+      repository-projects: write
     steps:
       - uses: actions/add-to-project@v0.5.0
         with:
           project-url: https://github.com/orgs/overhangio/projects/4
-          github-token: ${{ github.token }}
+          github-token: ${{ secrets.ADD_TO_PROJECT_TOKEN || secrets.GITHUB_TOKEN }}
