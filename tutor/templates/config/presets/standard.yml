@@ -1,3 +1,6 @@
 # 标准配置：包含基础、通用及流媒体模块
-EDOPS_ENABLED_MODULES:
-  - zhjx_zlmediakit
+RUN_ZHJX_ZLMEDIAKIT: true
+RUN_ZHJX_SUP: false
+RUN_ZHJX_ILIVE_ECOM: false
+RUN_ZHJX_MEDIA: true
+RUN_ZHJX_YKT: false

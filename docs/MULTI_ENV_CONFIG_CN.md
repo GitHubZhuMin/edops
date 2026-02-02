@@ -46,7 +46,7 @@ edops --root ~/edops-envs/lianyi config save --init \
   --set EDOPS_IMAGE_REGISTRY=zhjx-images.tencentcloudcr.com \
   --set EDOPS_MASTER_NODE_IP=192.168.1.10 \
   --set EDOPS_SCHOOL_ID=88888 \
-  --set EDOPS_ENABLED_MODULES=base,common
+  --set RUN_ZHJX_ZLMEDIAKIT=true
 ```
 
 **注意**：`config save` 命令会自动验证必需配置项（如 `EDOPS_IMAGE_REGISTRY`、`EDOPS_MASTER_NODE_IP`），如果缺失会提示错误。
@@ -65,7 +65,7 @@ edops --root ~/edops-envs/lianyi config validate
 - `EDOPS_IMAGE_REGISTRY`: Docker 镜像仓库地址
 - `EDOPS_MASTER_NODE_IP`: 主节点 IP 地址
 - `EDOPS_NETWORK_NAME`: Docker 网络名称（有默认值）
-- `EDOPS_ENABLED_MODULES`: 启用的模块列表（至少包含 `base,common`）
+- `RUN_ZHJX_*`: 模块开关（按需启用业务模块）
 
 ### 常见错误及解决方案
 
@@ -307,7 +307,11 @@ edops-envs/*/env/
 EDOPS_IMAGE_REGISTRY: "your-registry.com"
 EDOPS_MASTER_NODE_IP: "192.168.1.10"
 EDOPS_SCHOOL_ID: "your-school-id"
-EDOPS_ENABLED_MODULES: ["base", "common"]
+RUN_ZHJX_ZLMEDIAKIT: false
+RUN_ZHJX_SUP: false
+RUN_ZHJX_ILIVE_ECOM: false
+RUN_ZHJX_MEDIA: false
+RUN_ZHJX_YKT: false
 # 敏感信息通过环境变量设置
 ```
 
@@ -318,7 +322,7 @@ EDOPS_ENABLED_MODULES: ["base", "common"]
 **基础配置相同**：
 - `EDOPS_IMAGE_REGISTRY`
 - `EDOPS_NETWORK_NAME`
-- 模块启用列表
+- 模块开关（RUN_ZHJX_*）
 
 **客户特定配置**：
 - `EDOPS_MASTER_NODE_IP` - 不同客户的服务器 IP
@@ -361,7 +365,7 @@ edops --root ~/edops-envs/school-a config save \
   --set EDOPS_IMAGE_REGISTRY=zhjx-images.tencentcloudcr.com \
   --set EDOPS_MASTER_NODE_IP=10.0.1.100 \
   --set EDOPS_SCHOOL_ID=school-a \
-  --set EDOPS_ENABLED_MODULES=base,common,zhjx_sup
+  --set RUN_ZHJX_SUP=true
 
 # 4. 验证配置
 edops --root ~/edops-envs/school-a config validate
@@ -481,4 +485,3 @@ export TUTOR_ROOT=~/edops-envs/school-a
 3. ✅ 配置变更后重新生成配置文件
 4. ✅ 部署前验证配置完整性
 5. ✅ 遵循配置命名和管理规范
-

@@ -179,7 +179,7 @@ tutor config list  # 完全相同的输出
 ## 4. 模块化架构 🧩
 
 ### 决策
-**采用模块化架构，通过 `edops-modules.yml` 声明式管理所有模块。**
+**采用模块化架构，通过模板内的 `RUN_ZHJX_*` 开关控制模块是否启用。**
 
 ### 模块分类
 
@@ -194,29 +194,17 @@ tutor config list  # 完全相同的输出
 - **zhjx_media** - 流媒体处理
 - 其他业务模块...
 
-### 模块定义结构
+### 模块启用方式
+通过 `config.yml` 设置 `RUN_ZHJX_*` 开关启用对应模块，例如：
+
 ```yaml
-module_name:
-  required: true/false           # 是否必选
-  description: "模块描述"
-  template: "edops/local/*.yml"  # 模板路径
-  target: "local/*.yml"          # 渲染目标
-  depends_on: []                 # 依赖的模块
-  images:                        # 镜像列表
-    - name: service-name
-      repository: "registry/image"
-      version_var: VERSION_VAR
-  health_checks:                 # 健康检查
-    - service: service-name
-      type: http/tcp
-      url/host/port: ...
+RUN_ZHJX_ZLMEDIAKIT: true
+RUN_ZHJX_MEDIA: true
 ```
 
 ### 优势
-- 声明式配置，易于理解和维护
-- 自动依赖解析和排序
-- 统一的健康检查定义
-- 清晰的镜像版本映射
+- 开关直观，模板渲染路径清晰
+- 无需额外的模块元数据文件
 
 ---
 
@@ -358,7 +346,7 @@ edops local restart
 edops local launch
 
 # 同时部署 Open edX + zhjx 模块
-edops config save --set EDOPS_ENABLED_MODULES='["zhjx_zlmediakit"]'
+edops config save --set RUN_ZHJX_ZLMEDIAKIT=true
 edops local launch
 ```
 
@@ -537,4 +525,3 @@ edops --root /opt/prod-env local launch
 
 **最后更新**: 2024年12月5日  
 **维护者**: EdOps 开发团队
-

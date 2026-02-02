@@ -1,3 +1,380 @@
-# Placeholder for zhjx-media module
-version: '3.8'
-services: {}
+{% if RUN_ZHJX_MEDIA %}
+services:
+  # 主节点服务
+  master:
+    image: {{ EDOPS_IMAGE_REGISTRY }}/ly-sky.com/ly-ac-media-clip-svc-master:{{ EDOPS_VERSION_MEDIA }}
+    container_name: media-clip-master
+    ports:
+      - "8008:8008"
+    environment:
+      # 时区配置
+      TZ: Asia/Shanghai
+
+      # 节点类型
+      NODE_TYPE: master
+
+      # 基础应用配置
+      APP_NAME: ly-ac-media-clip-svc
+      APP_VERSION: 1.0.0
+      APP_ENV: production
+      API_PREFIX: /api/v1
+      API_KEY: 1GIf9HSeQ3vkX2Cp4rbfMuNCCIf5I9NN
+
+      # 服务配置
+      SERVICE_HOST: 0.0.0.0
+      SERVICE_PORT: 8008
+      SERVICE_DEBUG: true
+      SERVICE_LOG_LEVEL: INFO
+      SERVICE_LOG_DIR: logs
+      SERVICE_NAME: ly-ac-media-clip-svc
+
+      # 网络配置
+      MASTER_HOST_IP: "{{ EDOPS_MASTER_NODE_IP }}"
+      WORKER_HOST_IP: "{{ EDOPS_MASTER_NODE_IP }}"
+      MASTER_URL: "http://{{ EDOPS_MASTER_NODE_IP }}:8008"
+
+      # 数据库配置
+      DB_TYPE: mysql
+      DATABASE_HOST: "{{ EDOPS_MYSQL_HOST }}"
+      DB_HOST: "{{ EDOPS_MYSQL_HOST }}"
+      DB_PORT: {{ EDOPS_MYSQL_PORT }}
+      DB_USER: "{{ EDOPS_MYSQL_ROOT_USER }}"
+      DATABASE_PASSWORD: "{{ EDOPS_MYSQL_ROOT_PASSWORD }}"
+      DB_PASSWORD: "{{ EDOPS_MYSQL_ROOT_PASSWORD }}"
+      DB_NAME: ly_ac_media
+      DB_CHARSET: utf8mb4
+      DB_POOL_SIZE: 10
+      DB_MAX_OVERFLOW: 20
+
+      # Redis配置
+      REDIS_HOST: "{{ EDOPS_REDIS_HOST }}"
+      REDIS_PORT: {{ EDOPS_REDIS_PORT }}
+      REDIS_PASSWORD: "{{ EDOPS_REDIS_PASSWORD }}"
+      REDIS_DB: {{ EDOPS_REDIS_DATABASE }}
+      REDIS_POOL_SIZE: 10
+
+      # RabbitMQ配置
+      RABBITMQ_HOST: "{{ EDOPS_RABBITMQ_HOST }}"
+      RABBITMQ_PORT: {{ EDOPS_RABBITMQ_PORT }}
+      RABBITMQ_USER: "{{ EDOPS_RABBITMQ_DEFAULT_USER }}"
+      RABBITMQ_PASSWORD: "{{ EDOPS_RABBITMQ_DEFAULT_PASS }}"
+      RABBITMQ_VHOST: "{{ EDOPS_RABBITMQ_VIRTUAL_HOST }}"
+      RABBITMQ_HEARTBEAT: 600
+      RABBITMQ_BLOCKED_TIMEOUT: 300
+
+      # 存储配置
+      STORAGE_TYPE: minio
+      STORAGE_LOCAL_PATH: ./data/media
+      STORAGE_DOWNLOAD_PATH: ./data/download
+
+      # 腾讯云COS配置
+      COS_SECRET_ID: "{{ EDOPS_COS_SECRET_ID }}"
+      COS_SECRET_KEY: "{{ EDOPS_COS_SECRET_KEY }}"
+      COS_REGION: "{{ EDOPS_COS_REGION }}"
+      COS_BUCKET: "{{ EDOPS_COS_BUCKET }}"
+      COS_DOMAIN: "{{ EDOPS_COS_DOMAIN }}"
+      COS_CALLBACK_URL: "{{ EDOPS_COS_CALLBACK_URL }}"
+      COS_APPID: "{{ EDOPS_COS_APPID }}"
+      COS_FILEURL_HEAD: "{{ EDOPS_COS_FILEURL_HEAD }}"
+
+      # MinIO配置
+      MINIO_ENDPOINT: "{{ EDOPS_MINIO_CLUSTER_IP }}:{{ EDOPS_MINIO_API_PORT }}"
+      MINIO_ROOT_USER: "{{ EDOPS_MINIO_ROOT_USER }}"
+      MINIO_ROOT_PASSWORD: "{{ EDOPS_MINIO_ROOT_PASSWORD }}"
+      MINIO_ACCESS_KEY: "{{ EDOPS_MINIO_ROOT_USER }}"
+      MINIO_SECRET_KEY: "{{ EDOPS_MINIO_ROOT_PASSWORD }}"
+      MINIO_BUCKET: "{{ EDOPS_MINIO_BUCKET }}"
+      MINIO_REGION: "{{ EDOPS_MINIO_REGION }}"
+      MINIO_SECURE: {{ EDOPS_MINIO_SECURE }}
+      MINIO_CALLBACK_URL: "http://{{ EDOPS_MASTER_NODE_IP }}/api/ac-object-storage/v1/oss/files/direct-upload/result-minio"
+      MINIO_APPID: "{{ EDOPS_MINIO_APPID }}"
+      MINIO_FILEURL_HEAD: "http://{{ EDOPS_MASTER_NODE_IP }}"
+
+      # ZLMediaKit配置
+      ZLM_API_URL: "{{ EDOPS_ZLM_API_URL }}"
+      ZLM_URL: "{{ EDOPS_ZLM_URL }}"
+      ZLM_SECRET: "{{ EDOPS_ZLM_SECRET }}"
+
+      # 队列和任务配置
+      QUEUE_TYPE: memory
+      USE_REDIS_QUEUE: false
+      TASK_QUEUE_NAME: stream_media_tasks
+      TASK_CONCURRENCY: 4
+      TASK_TIMEOUT: 3600
+      TASK_CACHE_SIZE: 1024
+      TASK_QUEUE_SIZE: 1000
+
+      # 任务清理配置
+      TASK_CLEANUP_ENABLED: true
+      TASK_CLEANUP_INTERVAL_HOURS: 6
+      TASK_CLEANUP_KEEP_HOURS: 48
+      TASK_CLEANUP_MEMORY_INTERVAL_MINUTES: 30
+
+      # 节点管理配置
+      NODE_HEARTBEAT_TIMEOUT: 60
+      NODE_HEALTH_CHECK_INTERVAL: 30
+      NODE_REGISTRATION_ENDPOINT: /api/v1/node/register
+      NODE_HEARTBEAT_ENDPOINT: /api/v1/node/heartbeat
+      MASTER_REGISTRATION_ENDPOINT: /api/v1/node/register
+      MASTER_HEARTBEAT_ENDPOINT: /api/v1/node/heartbeat
+      MASTER_HEARTBEAT_INTERVAL: 30
+
+      # 媒体处理配置
+      MEDIA_FFMPEG_PATH: ffmpeg
+      MEDIA_FFPROBE_PATH: ffprobe
+      MEDIA_TEMP_DIR: ./data/temp
+      MEDIA_MAX_UPLOAD_SIZE: 104857600
+
+      # 监控配置
+      MONITORING_ENABLED: false
+      MONITORING_METRICS_PORT: 9090
+      MONITORING_COLLECT_INTERVAL: 10
+      MONITORING_RETENTION_DAYS: 7
+      MONITORING_CPU_WARNING: 80.0
+      MONITORING_CPU_CRITICAL: 90.0
+      MONITORING_MEMORY_WARNING: 80.0
+      MONITORING_MEMORY_CRITICAL: 90.0
+      MONITORING_DISK_WARNING: 80.0
+      MONITORING_DISK_CRITICAL: 90.0
+
+      # 告警配置
+      ALERT_ENABLED: false
+      ALERT_CALLBACK_URL: https://webhook.site/your-unique-url
+      ALERT_RESOURCE_CALLBACK_URL: https://webhook.site/your-resource-unique-url
+      ALERT_MAX_RETRIES: 3
+      ALERT_RETRY_INTERVAL: 5
+      ALERT_TIMEOUT: 10
+      ALERT_COOLDOWN_MINUTES: 30
+
+      # 兼容性配置
+      DEBUG: true
+    volumes:
+      # 上传文件目录映射（对应docker run中的配置）
+      - ${HOST_UPLOADS_PATH:-/opt/ly-ac-media-clip-svc/uploads}:/app/uploads
+
+      # 日志目录映射
+      - ${HOST_LOG_PATH:-/opt/ly-ac-media-clip-svc/logs}:/app/logs
+
+      # 关键映射：ZLMediaKit录制文件目录（支持不同系统路径配置）
+      - ${ZLM_RECORD_PATH:-/home/zhjx/media/www/record}:/opt/media/bin/www/record
+
+      # 临时处理目录映射
+      - ${HOST_TEMP_PATH:-/opt/ly-ac-media-clip-svc/temp}:/tmp/media-processing
+
+      # 应用数据目录映射（Docker Compose独有的命名卷）
+      - media_data:/app/data/media
+      - master_temp:/app/data/temp
+    restart: unless-stopped
+    networks:
+      - {{ EDOPS_NETWORK_NAME }}
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "1.0"
+        reservations:
+          memory: 1G
+          cpus: "0.5"
+    healthcheck:
+      test:
+        ["CMD", "curl", "-f", "http://localhost:${SERVICE_PORT:-8008}/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 工作节点服务
+  worker:
+    image: {{ EDOPS_IMAGE_REGISTRY }}/ly-sky.com/ly-ac-media-clip-svc-worker:{{ EDOPS_VERSION_MEDIA }}
+    container_name: media-clip-worker
+    ports:
+      - "8009:8009"
+    environment:
+      # 时区配置
+      TZ: Asia/Shanghai
+
+      # 节点类型和主节点URL（关键配置）
+      NODE_TYPE: worker
+      MASTER_URL: "http://{{ EDOPS_MASTER_NODE_IP }}:8008"
+
+      # 基础应用配置
+      APP_NAME: ly-ac-media-clip-svc
+      APP_VERSION: 1.0.0
+      APP_ENV: production
+      API_PREFIX: /api/v1
+      API_KEY: 1GIf9HSeQ3vkX2Cp4rbfMuNCCIf5I9NN
+
+      # 服务配置
+      SERVICE_HOST: 0.0.0.0
+      SERVICE_PORT: 8009
+      SERVICE_DEBUG: true
+      SERVICE_LOG_LEVEL: INFO
+      SERVICE_LOG_DIR: logs
+      SERVICE_NAME: ly-ac-media-clip-svc
+
+      # 网络配置
+      MASTER_HOST_IP: "{{ EDOPS_MASTER_NODE_IP }}"
+      WORKER_HOST_IP: "{{ EDOPS_MASTER_NODE_IP }}"
+
+      # 数据库配置
+      DB_TYPE: mysql
+      DATABASE_HOST: "{{ EDOPS_MYSQL_HOST }}"
+      DB_HOST: "{{ EDOPS_MYSQL_HOST }}"
+      DB_PORT: {{ EDOPS_MYSQL_PORT }}
+      DB_USER: "{{ EDOPS_MYSQL_ROOT_USER }}"
+      DATABASE_PASSWORD: "{{ EDOPS_MYSQL_ROOT_PASSWORD }}"
+      DB_PASSWORD: "{{ EDOPS_MYSQL_ROOT_PASSWORD }}"
+      DB_NAME: ly_ac_media
+      DB_CHARSET: utf8mb4
+      DB_POOL_SIZE: 10
+      DB_MAX_OVERFLOW: 20
+
+      # Redis配置
+      REDIS_HOST: "{{ EDOPS_REDIS_HOST }}"
+      REDIS_PORT: {{ EDOPS_REDIS_PORT }}
+      REDIS_PASSWORD: "{{ EDOPS_REDIS_PASSWORD }}"
+      REDIS_DB: {{ EDOPS_REDIS_DATABASE }}
+      REDIS_POOL_SIZE: 10
+
+      # RabbitMQ配置
+      RABBITMQ_HOST: "{{ EDOPS_RABBITMQ_HOST }}"
+      RABBITMQ_PORT: {{ EDOPS_RABBITMQ_PORT }}
+      RABBITMQ_USER: "{{ EDOPS_RABBITMQ_DEFAULT_USER }}"
+      RABBITMQ_PASSWORD: "{{ EDOPS_RABBITMQ_DEFAULT_PASS }}"
+      RABBITMQ_VHOST: "{{ EDOPS_RABBITMQ_VIRTUAL_HOST }}"
+      RABBITMQ_HEARTBEAT: 600
+      RABBITMQ_BLOCKED_TIMEOUT: 300
+
+      # 存储配置
+      STORAGE_TYPE: minio
+      STORAGE_LOCAL_PATH: ./data/media
+      STORAGE_DOWNLOAD_PATH: ./data/download
+
+      # 腾讯云COS配置
+      COS_SECRET_ID: "{{ EDOPS_COS_SECRET_ID }}"
+      COS_SECRET_KEY: "{{ EDOPS_COS_SECRET_KEY }}"
+      COS_REGION: "{{ EDOPS_COS_REGION }}"
+      COS_BUCKET: "{{ EDOPS_COS_BUCKET }}"
+      COS_DOMAIN: "{{ EDOPS_COS_DOMAIN }}"
+      COS_CALLBACK_URL: "{{ EDOPS_COS_CALLBACK_URL }}"
+      COS_APPID: "{{ EDOPS_COS_APPID }}"
+      COS_FILEURL_HEAD: "{{ EDOPS_COS_FILEURL_HEAD }}"
+
+      # MinIO配置
+      MINIO_ENDPOINT: "{{ EDOPS_MINIO_CLUSTER_IP }}:{{ EDOPS_MINIO_API_PORT }}"
+      MINIO_ROOT_USER: "{{ EDOPS_MINIO_ROOT_USER }}"
+      MINIO_ROOT_PASSWORD: "{{ EDOPS_MINIO_ROOT_PASSWORD }}"
+      MINIO_ACCESS_KEY: "{{ EDOPS_MINIO_ROOT_USER }}"
+      MINIO_SECRET_KEY: "{{ EDOPS_MINIO_ROOT_PASSWORD }}"
+      MINIO_BUCKET: "{{ EDOPS_MINIO_BUCKET }}"
+      MINIO_REGION: "{{ EDOPS_MINIO_REGION }}"
+      MINIO_SECURE: {{ EDOPS_MINIO_SECURE }}
+      MINIO_CALLBACK_URL: "http://{{ EDOPS_MASTER_NODE_IP }}/api/ac-object-storage/v1/oss/files/direct-upload/result-minio"
+      MINIO_APPID: "{{ EDOPS_MINIO_APPID }}"
+      MINIO_FILEURL_HEAD: "http://{{ EDOPS_MASTER_NODE_IP }}"
+
+      # ZLMediaKit配置
+      ZLM_API_URL: "{{ EDOPS_ZLM_API_URL }}"
+      ZLM_URL: "{{ EDOPS_ZLM_URL }}"
+      ZLM_SECRET: "{{ EDOPS_ZLM_SECRET }}"
+
+      # 队列和任务配置
+      QUEUE_TYPE: memory
+      USE_REDIS_QUEUE: false
+      TASK_QUEUE_NAME: stream_media_tasks
+      TASK_CONCURRENCY: 4
+      TASK_TIMEOUT: 3600
+      TASK_CACHE_SIZE: 1024
+      TASK_QUEUE_SIZE: 1000
+
+      # 任务清理配置
+      TASK_CLEANUP_ENABLED: true
+      TASK_CLEANUP_INTERVAL_HOURS: 6
+      TASK_CLEANUP_KEEP_HOURS: 48
+      TASK_CLEANUP_MEMORY_INTERVAL_MINUTES: 30
+
+      # 节点管理配置
+      NODE_HEARTBEAT_TIMEOUT: 60
+      NODE_HEALTH_CHECK_INTERVAL: 30
+      NODE_REGISTRATION_ENDPOINT: /api/v1/node/register
+      NODE_HEARTBEAT_ENDPOINT: /api/v1/node/heartbeat
+      MASTER_REGISTRATION_ENDPOINT: /api/v1/node/register
+      MASTER_HEARTBEAT_ENDPOINT: /api/v1/node/heartbeat
+      MASTER_HEARTBEAT_INTERVAL: 30
+
+      # 工作节点特有配置
+      WORKER_MAX_TASKS: 5
+      WORKER_CAPABILITIES: '["audio_process", "video_process"]'
+      WORKER_WORK_DIR: ./data/work
+
+      # 媒体处理配置
+      MEDIA_FFMPEG_PATH: ffmpeg
+      MEDIA_FFPROBE_PATH: ffprobe
+      MEDIA_TEMP_DIR: ./data/temp
+      MEDIA_MAX_UPLOAD_SIZE: 104857600
+
+      # 监控配置
+      MONITORING_ENABLED: false
+      MONITORING_METRICS_PORT: 9090
+      MONITORING_COLLECT_INTERVAL: 10
+      MONITORING_RETENTION_DAYS: 7
+      MONITORING_CPU_WARNING: 80.0
+      MONITORING_CPU_CRITICAL: 90.0
+      MONITORING_MEMORY_WARNING: 80.0
+      MONITORING_MEMORY_CRITICAL: 90.0
+      MONITORING_DISK_WARNING: 80.0
+      MONITORING_DISK_CRITICAL: 90.0
+
+      # 告警配置
+      ALERT_ENABLED: false
+      ALERT_CALLBACK_URL: https://webhook.site/your-unique-url
+      ALERT_RESOURCE_CALLBACK_URL: https://webhook.site/your-resource-unique-url
+      ALERT_MAX_RETRIES: 3
+      ALERT_RETRY_INTERVAL: 5
+      ALERT_TIMEOUT: 10
+      ALERT_COOLDOWN_MINUTES: 30
+
+      # 兼容性配置
+      DEBUG: true
+    volumes:
+      # 上传文件目录映射（对应docker run中的配置）
+      - ${HOST_UPLOADS_PATH:-/opt/ly-ac-media-clip-svc/uploads}:/app/uploads
+
+      # 日志目录映射
+      - ${HOST_LOG_PATH:-/opt/ly-ac-media-clip-svc/logs}:/app/logs
+
+      # 关键映射：ZLMediaKit录制文件目录（工作节点也需要访问）
+      - ${ZLM_RECORD_PATH:-/home/zhjx/www/record}:/opt/media/bin/www/record
+
+      # 临时处理目录映射
+      - ${HOST_TEMP_PATH:-/opt/ly-ac-media-clip-svc/temp}:/tmp/media-processing
+
+      # 应用数据目录映射（Docker Compose独有的命名卷）
+      - worker_work:/app/data/work
+      - worker_temp:/app/data/temp
+    restart: unless-stopped
+    networks:
+      - {{ EDOPS_NETWORK_NAME }}
+    depends_on:
+      - master
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8009/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  media_data:
+    driver: local
+  master_temp:
+    driver: local
+  worker_work:
+    driver: local
+  worker_temp:
+    driver: local
+
+networks:
+  {{ EDOPS_NETWORK_NAME }}:
+    external: true
+{% endif %}

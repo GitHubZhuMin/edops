@@ -357,23 +357,7 @@ def resolve_repository_path(config: dict, service_name: str) -> str:
     Returns:
         完整的 repository 路径（如 ly-sky.com/ly-ac-gateway-svc）
     """
-    from tutor.edops import modules as edops_modules
-    from tutor import env as tutor_env
-
-    # 从模块元数据中查找
-    modules_list = edops_modules.get_enabled_modules(config)
-    for module in modules_list:
-        for image in module.images:
-            if image.name == service_name:
-                # 渲染 repository 路径
-                full_repo = tutor_env.render_str(config, image.repository)
-                # 移除 registry 前缀，只保留 repository 路径
-                registry = config.get("EDOPS_IMAGE_REGISTRY", "")
-                if registry and full_repo.startswith(f"{registry}/"):
-                    return full_repo[len(f"{registry}/"):]
-                return full_repo
-
-    # 如果找不到，直接使用服务名（向后兼容）
+    # 目前未维护模块级镜像元数据，直接使用服务名（向后兼容）
     return service_name
 
 

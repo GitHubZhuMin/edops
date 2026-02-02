@@ -29,21 +29,20 @@ EdOps 采用模块化架构来管理 zhjx 系统的不同组件。该架构层�
 
 - **`base` 模块：** 此模块始终启用，提供所有其他模块所依赖的核心基础设施服务，如 Nacos、MySQL、Minio、Redis 和消息队列。
 - **`common` 模块：** 此模块也始终启用，提供 zhjx 所有业务系统共享的通用服务，通常包括用户管理、认证、后台管理面板和 API 网关。
-- **`zhjx-*` 模块：** 这些是可选的业务模块，提供特定功能，例如用于媒体流处理的 `zhjx-zlmediakit`。可以根据具体部署需求启用或禁用这些模块。
+- **`zhjx_*` 模块：** 这些是可选的业务模块，提供特定功能，例如用于媒体流处理的 `zhjx_zlmediakit`。可以根据具体部署需求启用或禁用这些模块。
 
 ### 3. 集中化配置
 
 EdOps 部署的所有配置都通过单一的 `config.yml` 文件进行管理。该文件控制着从镜像版本、域名到数据库凭据的所有内容。这种集中化的方法使得环境复制和审计变得简单。
 
-要启用或禁用 `zhjx-*` 模块，您需要在配置文件中使用 `EDOPS_ENABLED_MODULES` 设置。例如：
+要启用或禁用 `zhjx_*` 模块，您需要在配置文件中使用 `RUN_ZHJX_*` 开关。例如：
 
 .. code-block:: yaml
 
-  EDOPS_ENABLED_MODULES:
-    - zhjx-zlmediakit
-    - zhjx-another-module
+  RUN_ZHJX_ZLMEDIAKIT: true
+  RUN_ZHJX_ILIVE_ECOM: true
 
-`base` 和 `common` 模块始终处于启用状态，无需在此处列出。
+`base` 和 `common` 模块始终处于启用状态，无需在此处修改。
 
 ### 4. 环境一致性
 
