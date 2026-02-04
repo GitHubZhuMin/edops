@@ -183,11 +183,11 @@ tutor config list  # 完全相同的输出
 
 ### 模块分类
 
-#### 必选模块（required: true）
+#### 默认开启模块
 - **base** - nacos/mysql/redis/rabbitmq 等基础中间件
 - **common** - 共享域服务与租户管理前端
 
-#### 可选模块（required: false）
+#### 默认关闭模块
 - **zhjx_zlmediakit** - ZLMediaKit 直播流接入
 - **zhjx_sup** - AI 督导系统
 - **zhjx_ilive_ecom** - 直播实训电商
