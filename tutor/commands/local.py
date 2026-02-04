@@ -1,17 +1,15 @@
 from __future__ import annotations
 
 import json
-import shutil
+import time
 import typing as t
-from pathlib import Path
 
 import click
-import importlib_resources
 
 from tutor import config as tutor_config
 from tutor import env as tutor_env
-from tutor import fmt
-from tutor import hooks
+from tutor import exceptions, fmt
+from tutor import hooks, utils
 from tutor.commands import compose
 from tutor.types import Config, get_typed
 
@@ -126,7 +124,111 @@ def healthcheck(
     context: compose.LocalContext, module_name: t.Optional[str]
 ) -> None:
     """对指定模块或所有模块运行健康检查。"""
-    fmt.echo_info("当前未配置模块级健康检查，请使用 docker compose 或服务自身探针检查。")
+    config = tutor_config.load(context.root)
+    runner = LocalTaskRunner(context.root, config)
+
+    module_files = {
+        "base": "zhjx-base.yml",
+        "common": "zhjx-common.yml",
+        "zhjx_zlmediakit": "zhjx-zlmediakit.yml",
+        "zhjx_ilive_ecom": "zhjx-ilive-ecom.yml",
+        "zhjx_sup": "zhjx-sup.yml",
+        "zhjx_media": "zhjx-media.yml",
+        "zhjx_ykt": "zhjx-ykt.yml",
+    }
+    module_flags = {
+        "base": "RUN_ZHJX_BASE",
+        "common": "RUN_ZHJX_COMMON",
+        "zhjx_zlmediakit": "RUN_ZHJX_ZLMEDIAKIT",
+        "zhjx_ilive_ecom": "RUN_ZHJX_ILIVE_ECOM",
+        "zhjx_sup": "RUN_ZHJX_SUP",
+        "zhjx_media": "RUN_ZHJX_MEDIA",
+        "zhjx_ykt": "RUN_ZHJX_YKT",
+    }
+
+    if module_name:
+        if module_name not in module_files:
+            raise exceptions.TutorError(f"未知模块: {module_name}")
+        flag = module_flags.get(module_name)
+        if flag and not config.get(flag, flag in {"RUN_ZHJX_BASE", "RUN_ZHJX_COMMON"}):
+            raise exceptions.TutorError(f"模块未启用: {module_name}")
+        modules = [module_name]
+    else:
+        modules = []
+        for name, flag in module_flags.items():
+            enabled = config.get(flag, flag in {"RUN_ZHJX_BASE", "RUN_ZHJX_COMMON"})
+            if enabled:
+                modules.append(name)
+
+    target_services: set[str] = set()
+    for name in modules:
+        compose_file = tutor_env.pathjoin(
+            context.root, "local", module_files[name]
+        )
+        try:
+            output = utils.check_output(
+                "docker",
+                "compose",
+                "-f",
+                compose_file,
+                "--project-name",
+                runner.project_name,
+                "config",
+                "--services",
+            )
+        except Exception as exc:
+            raise exceptions.TutorError(
+                f"无法解析模块 {name} 的服务列表: {exc}"
+            ) from exc
+        services = [
+            line.strip()
+            for line in output.decode("utf-8").splitlines()
+            if line.strip()
+        ]
+        for service in services:
+            if service == "zhjx-permissions":
+                continue
+            target_services.add(service)
+
+    if not target_services:
+        fmt.echo_info("没有可检查的服务，跳过健康检查。")
+        return
+
+    fmt.echo_info("正在检查服务运行状态...")
+    max_retries = 10
+    interval_seconds = 3
+
+    for attempt in range(max_retries):
+        try:
+            ps_output = runner.docker_compose_output("ps", "--format", "json")
+            containers = json.loads(ps_output.decode("utf-8"))
+        except Exception:
+            containers = []
+
+        states = {}
+        for container in containers:
+            name = container.get("Service", container.get("Name", ""))
+            state = container.get("State", "unknown")
+            states[name] = state
+
+        failed = {
+            service: states.get(service, "missing")
+            for service in sorted(target_services)
+            if states.get(service) != "running"
+        }
+
+        if not failed:
+            fmt.echo_info("✓ 所有服务运行正常")
+            return
+
+        if attempt < max_retries - 1:
+            time.sleep(interval_seconds)
+            continue
+
+        fmt.echo_error("以下服务未正常运行：")
+        for service, state in failed.items():
+            fmt.echo_error(f"  - {service}: {state}")
+        raise exceptions.TutorError("健康检查失败")
 
 
 @click.command(name="history", help="查看部署历史")
@@ -273,32 +375,13 @@ def rollback(
 @click.pass_obj
 def bootstrap(context: compose.LocalContext, preset: t.Optional[str]) -> None:
     """自动执行部署前的准备工作，包括环境检查和基础配置。"""
-    from tutor import utils
-    from tutor.commands.config import save as config_save_command
-
     fmt.echo(fmt.title("EdOps 部署准备工具"))
 
-    # 1. 环境检查
-    fmt.echo_info("正在检查运行环境...")
-    try:
-        utils.check_output("docker", "info")
-        fmt.echo("  ✓ Docker 已安装")
-    except Exception:
-        fmt.echo_error("  ✗ 未检测到 Docker，请先安装 Docker。")
-        return
-
-    try:
-        utils.check_output("docker", "compose", "version")
-        fmt.echo("  ✓ Docker Compose 已安装")
-    except Exception:
-        fmt.echo_error("  ✗ 未检测到 Docker Compose，请先安装 Docker Compose V2。")
-        return
-
-    # 2. 自动检测 IP
+    # 1. 自动检测 IP
     detected_ip = utils.get_host_ip()
     fmt.echo_info(f"检测到本机 IP: {detected_ip}")
 
-    # 3. 基础配置
+    # 2. 基础配置
     config = tutor_config.load_minimal(context.root)
 
     # 设置检测到的 IP
@@ -320,53 +403,11 @@ def bootstrap(context: compose.LocalContext, preset: t.Optional[str]) -> None:
     # 保存配置
     tutor_config.save_config_file(context.root, config)
 
-    _ensure_nginx_assets(config)
+    compose._local_preflight(context.root, config)
+
     fmt.echo_info("\n✓ 基础配置已完成！")
     fmt.echo_info("接下来您可以运行以下命令开始部署：")
     fmt.echo(fmt.command("edops local launch"))
-
-
-def _ensure_nginx_assets(config: Config) -> None:
-    base_path = Path(get_typed(config, "EDOPS_BASE_PATH", str, "/home/zhjx"))
-    nginx_conf_value = get_typed(config, "EDOPS_NGINX_CONF", str, "")
-    cert_key_value = get_typed(config, "EDOPS_CERT_KEY_FILE", str, "")
-    cert_crt_value = get_typed(config, "EDOPS_CERT_CRT_FILE", str, "")
-
-    nginx_conf = Path(nginx_conf_value) if nginx_conf_value else base_path / "nginx.conf"
-    cert_key = Path(cert_key_value) if cert_key_value else base_path / "portal_ly-sky_com.key"
-    cert_crt = Path(cert_crt_value) if cert_crt_value else base_path / "portal_ly-sky_com.crt"
-
-    sources_root = importlib_resources.files("tutor") / "templates" / "build" / "nginx"
-    if not sources_root.exists():
-        fmt.echo_info("未找到默认 Nginx 配置目录，跳过初始化。")
-        return
-
-    targets = {
-        "nginx.conf": nginx_conf,
-        "portal_ly-sky_com.key": cert_key,
-        "portal_ly-sky_com.crt": cert_crt,
-    }
-
-    try:
-        base_path.mkdir(parents=True, exist_ok=True)
-    except PermissionError:
-        fmt.echo_error(
-            f"无法创建 Nginx 配置目录 {base_path}，请手动初始化证书与配置文件。"
-        )
-        return
-
-    for filename, target in targets.items():
-        if not target:
-            continue
-        source = sources_root / filename
-        if target.exists():
-            continue
-        try:
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(source, target)
-            fmt.echo_info(f"  ✓ 已写入 {target}")
-        except PermissionError:
-            fmt.echo_error(f"无法写入 {target}，请检查权限。")
 
 
 compose.add_commands(local)

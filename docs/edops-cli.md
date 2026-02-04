@@ -140,7 +140,7 @@ edops local logs --tail 100 zhjx-nacos
 
 ### edops local healthcheck
 
-手动触发健康检查。
+手动触发运行态健康检查（检查服务是否处于 running）。
 
 ```bash
 edops local healthcheck

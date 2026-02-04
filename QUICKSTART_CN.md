@@ -67,6 +67,8 @@ edops local history
 edops local logs --follow
 ```
 
+说明：`edops local healthcheck` 已实装运行态检查，用于确认服务是否处于 running。
+
 ### 镜像管理
 
 ```bash
@@ -257,4 +259,3 @@ cd /Users/zhumin/zhjx/edops
 source venv/bin/activate
 pip install -e . --upgrade
 ```
-

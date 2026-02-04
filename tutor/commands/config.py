@@ -2,8 +2,12 @@ from __future__ import annotations
 
 import json
 import os.path
+import shutil
 import typing as t
+from pathlib import Path
 from shutil import which
+
+import importlib_resources
 
 import click
 import click.shell_completion
@@ -13,7 +17,17 @@ from tutor import env, exceptions, fmt, hooks, serialize, utils
 from tutor import interactive as interactive_config
 from tutor.commands.context import Context
 from tutor.commands.params import ConfigLoaderParam
-from tutor.types import Config, ConfigValue
+from tutor.types import Config, ConfigValue, get_typed
+
+
+ZHJX_MODULE_DEPS: dict[str, list[str]] = {
+    "RUN_ZHJX_COMMON": ["RUN_ZHJX_BASE"],
+    "RUN_ZHJX_ZLMEDIAKIT": ["RUN_ZHJX_BASE"],
+    "RUN_ZHJX_MEDIA": ["RUN_ZHJX_COMMON", "RUN_ZHJX_ZLMEDIAKIT"],
+    "RUN_ZHJX_ILIVE_ECOM": ["RUN_ZHJX_COMMON"],
+    "RUN_ZHJX_SUP": ["RUN_ZHJX_COMMON"],
+    "RUN_ZHJX_YKT": ["RUN_ZHJX_COMMON"],
+}
 
 
 def _validate_required_config(config: Config) -> None:
@@ -25,6 +39,7 @@ def _validate_required_config(config: Config) -> None:
     required_vars = [
         "EDOPS_IMAGE_REGISTRY",
         "EDOPS_MASTER_NODE_IP",
+        "EDOPS_NETWORK_NAME",
     ]
     
     # Optional but recommended for production
@@ -56,6 +71,24 @@ def _validate_required_config(config: Config) -> None:
         fmt.echo_alert("配置警告：")
         for warning in warnings:
             fmt.echo_alert(f"  - {warning}")
+
+    _validate_module_deps(config)
+
+
+def _validate_module_deps(config: Config) -> None:
+    missing: list[str] = []
+    for flag, deps in ZHJX_MODULE_DEPS.items():
+        if not config.get(flag, False):
+            continue
+        for dep in deps:
+            if not config.get(dep, False):
+                missing.append(f"{flag} 依赖 {dep}")
+
+    if missing:
+        fmt.echo_error("模块依赖校验失败：")
+        for item in missing:
+            fmt.echo_error(f"  - {item}")
+        raise exceptions.TutorError("模块依赖校验失败，请先启用依赖模块")
 
 
 def _ensure_data_directories(root: str, config: Config) -> None:
@@ -98,6 +131,49 @@ def _ensure_data_directories(root: str, config: Config) -> None:
         except OSError:
             # Ignore permission errors (may not have sufficient privileges)
             pass
+
+
+def _ensure_nginx_assets(config: Config) -> None:
+    base_path = Path(get_typed(config, "EDOPS_BASE_PATH", str, "/home/zhjx"))
+    nginx_conf_value = get_typed(config, "EDOPS_NGINX_CONF", str, "")
+    cert_key_value = get_typed(config, "EDOPS_CERT_KEY_FILE", str, "")
+    cert_crt_value = get_typed(config, "EDOPS_CERT_CRT_FILE", str, "")
+
+    nginx_conf = Path(nginx_conf_value) if nginx_conf_value else base_path / "nginx.conf"
+    cert_key = Path(cert_key_value) if cert_key_value else base_path / "portal_ly-sky_com.key"
+    cert_crt = Path(cert_crt_value) if cert_crt_value else base_path / "portal_ly-sky_com.crt"
+
+    sources_root = importlib_resources.files("tutor") / "templates" / "build" / "nginx"
+    if not sources_root.exists():
+        fmt.echo_info("未找到默认 Nginx 配置目录，跳过初始化。")
+        return
+
+    targets = {
+        "nginx.conf": nginx_conf,
+        "portal_ly-sky_com.key": cert_key,
+        "portal_ly-sky_com.crt": cert_crt,
+    }
+
+    try:
+        base_path.mkdir(parents=True, exist_ok=True)
+    except PermissionError:
+        fmt.echo_error(
+            f"无法创建 Nginx 配置目录 {base_path}，请手动初始化证书与配置文件。"
+        )
+        return
+
+    for filename, target in targets.items():
+        if not target:
+            continue
+        source = sources_root / filename
+        if target.exists():
+            continue
+        try:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+            fmt.echo_info(f"  ✓ 已写入 {target}")
+        except PermissionError:
+            fmt.echo_error(f"无法写入 {target}，请检查权限。")
 
 
 @click.group(
@@ -410,27 +486,10 @@ def list_config(
 def validate(context: Context) -> None:
     """验证所有必需的配置项已设置。"""
     config = tutor_config.load(context.root)
-
-    # 定义 EdOps 必需的配置项
-    required_keys = [
-        "EDOPS_IMAGE_REGISTRY",
-        "EDOPS_MASTER_NODE_IP",
-        "EDOPS_NETWORK_NAME",
-    ]
-
-    missing_keys = []
-    for key in required_keys:
-        if key not in config or not config[key]:
-            missing_keys.append(key)
-
-    if missing_keys:
-        fmt.echo(fmt.error("配置验证失败！"))
-        missing_str = ", ".join(missing_keys)
-        fmt.echo(fmt.error(f"缺少必需的配置项: {missing_str}"))
-        hint = "\n请运行 'edops config save --interactive'"
-        fmt.echo(hint + " 来设置这些值")
-        raise exceptions.TutorError("配置验证失败")
-
+    validation_config = dict(config)
+    tutor_config.update_with_defaults(validation_config)
+    tutor_config.render_full(validation_config)
+    _validate_required_config(validation_config)
     fmt.echo(fmt.info("✓ 配置验证通过"))
 
 

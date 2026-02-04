@@ -103,6 +103,15 @@ class ConfigTests(unittest.TestCase, TestCommandMixin):
             ["my-package==1.0.0"], config["OPENEDX_EXTRA_PIP_REQUIREMENTS"]
         )
 
+    def test_config_validate_module_deps(self) -> None:
+        with temporary_root() as root:
+            config = tutor_config.load_minimal(root)
+            config["RUN_ZHJX_MEDIA"] = True
+            tutor_config.save_config_file(root, config)
+            result = self.invoke_in_root(root, ["config", "validate"])
+        self.assertNotEqual(0, result.exit_code)
+        self.assertIn("RUN_ZHJX_ZLMEDIAKIT", result.output)
+
 
 class PatchesTests(unittest.TestCase, TestCommandMixin):
     def test_config_patches_list(self) -> None:

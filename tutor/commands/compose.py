@@ -109,6 +109,46 @@ class BaseComposeContext(BaseTaskContext):
         raise NotImplementedError
 
 
+def _local_preflight(root: str, config: Config) -> None:
+    fmt.echo_info("正在执行部署前检查...")
+
+    try:
+        utils.check_output("docker", "info")
+        fmt.echo("  ✓ Docker 已安装")
+    except Exception as exc:
+        raise TutorError("未检测到 Docker，请先安装 Docker。") from exc
+
+    try:
+        utils.check_output("docker", "compose", "version")
+        fmt.echo("  ✓ Docker Compose 已安装")
+    except Exception as exc:
+        raise TutorError("未检测到 Docker Compose，请先安装 Docker Compose V2。") from exc
+
+    validation_config = dict(config)
+    tutor_config.update_with_defaults(validation_config)
+    tutor_config.render_full(validation_config)
+
+    from tutor.commands import config as config_command
+
+    config_command._validate_required_config(validation_config)
+
+    network_name = validation_config.get("EDOPS_NETWORK_NAME", "")
+    if network_name:
+        try:
+            utils.check_output("docker", "network", "inspect", network_name)
+        except Exception:
+            try:
+                utils.check_output("docker", "network", "create", network_name)
+                fmt.echo(f"  ✓ 已创建网络 {network_name}")
+            except Exception as exc:
+                raise TutorError(
+                    f"无法创建 Docker 网络 {network_name}，请检查权限或手动创建。"
+                ) from exc
+
+    config_command._ensure_data_directories(root, validation_config)
+    config_command._ensure_nginx_assets(validation_config)
+
+
 @click.command(help="从头配置并运行 EdOps 平台")
 @click.option("-I", "--non-interactive", is_flag=True, help="非交互式运行")
 @click.option("-p", "--pullimages", is_flag=True, help="更新 docker 镜像")
@@ -137,6 +177,8 @@ def launch(
     interactive_configuration(context, not non_interactive, run_for_prod=run_for_prod)
 
     config = tutor_config.load(context.obj.root)
+    if context_name == "local":
+        _local_preflight(context.obj.root, config)
 
     if not skip_build:
         click.echo(fmt.title("构建 Docker 镜像"))
