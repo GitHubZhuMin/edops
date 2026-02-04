@@ -15,6 +15,7 @@ class CliTests(unittest.TestCase, TestCommandMixin):
         result = self.invoke(["--help"])
         self.assertEqual(0, result.exit_code)
         self.assertIsNone(result.exception)
+        self.assertNotIn("k8s", result.output)
 
     def test_cli_version(self) -> None:
         result = self.invoke(["--version"])

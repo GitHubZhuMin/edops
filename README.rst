@@ -46,11 +46,11 @@ EdOps 部署的所有配置都通过单一的 `config.yml` 文件进行管理。
 
 ### 4. 环境一致性
 
-EdOps 继承了 Tutor 对多部署环境的支持，确保您的应用无论是在本地开发、单机服务器还是 Kubernetes 集群上，其行为都保持一致。
+EdOps 本期聚焦 `local` 与 `portainer` 两种可交付模式，K8s 入口在 CLI 中屏蔽（代码保留，后续迭代再开放）。
 
 - **`dev`：** 用于本地开发，支持热重载和便捷调试。
 - **`local`：** 用于单机生产部署，使用 Docker Compose。
-- **`k8s`：** 用于在 Kubernetes 上的多节点、可扩展部署。
+- **`portainer`：** 用于输出 Docker Swarm stack 文件并在 Portainer/Swarm 中部署。
 
 快速入门
 --------

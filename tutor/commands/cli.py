@@ -14,7 +14,6 @@ from tutor.commands.config import config_command
 from tutor.commands.context import Context
 from tutor.commands.dev import dev
 from tutor.commands.images import images_command
-from tutor.commands.k8s import k8s
 from tutor.commands.local import local
 from tutor.commands.mounts import mounts_command
 from tutor.commands.nacos import nacos_command
@@ -129,7 +128,6 @@ hooks.Filters.CLI_COMMANDS.add_items(
         dev,
         help_command,
         images_command,
-        k8s,
         local,
         mounts_command,
         nacos_command,

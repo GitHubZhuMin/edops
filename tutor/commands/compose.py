@@ -130,7 +130,9 @@ def _local_preflight(root: str, config: Config) -> None:
 
     from tutor.commands import config as config_command
 
-    config_command._validate_required_config(validation_config)
+    config_command._validate_required_config(
+        validation_config, include_runtime_warnings=True
+    )
 
     network_name = validation_config.get("EDOPS_NETWORK_NAME", "")
     if network_name:

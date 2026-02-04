@@ -12,3 +12,7 @@ __pycache__
 # Unit test/ coverage reports
 .coverage
 /htmlcov/
+
+findings.md
+progress.md
+task_plan.md

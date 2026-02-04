@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import os.path
 import shutil
 import typing as t
@@ -30,7 +31,9 @@ ZHJX_MODULE_DEPS: dict[str, list[str]] = {
 }
 
 
-def _validate_required_config(config: Config) -> None:
+def _validate_required_config(
+    config: Config, include_runtime_warnings: bool = True
+) -> None:
     """
     Validate that required configuration items are set.
     
@@ -72,10 +75,12 @@ def _validate_required_config(config: Config) -> None:
         for warning in warnings:
             fmt.echo_alert(f"  - {warning}")
 
-    _validate_module_deps(config)
+    if include_runtime_warnings:
+        _validate_module_deps(config)
+        _warn_private_registry_auth(config)
 
 
-def _validate_module_deps(config: Config) -> None:
+def _validate_module_deps(config: Config) -> list[str]:
     missing: list[str] = []
     for flag, deps in ZHJX_MODULE_DEPS.items():
         if not config.get(flag, False):
@@ -85,10 +90,37 @@ def _validate_module_deps(config: Config) -> None:
                 missing.append(f"{flag} 依赖 {dep}")
 
     if missing:
-        fmt.echo_error("模块依赖校验失败：")
+        fmt.echo_alert("模块依赖提示：")
         for item in missing:
-            fmt.echo_error(f"  - {item}")
-        raise exceptions.TutorError("模块依赖校验失败，请先启用依赖模块")
+            fmt.echo_alert(f"  - {item}")
+        fmt.echo_alert("依赖缺失可能导致运行异常，请按需启用对应模块。")
+
+    return missing
+
+
+def _warn_private_registry_auth(config: Config) -> None:
+    registry = str(config.get("EDOPS_IMAGE_REGISTRY", "")).strip().rstrip("/")
+    if not registry:
+        return
+    if registry in {"docker.io", "index.docker.io", "registry-1.docker.io"}:
+        return
+
+    username = os.getenv("EDOPS_IMAGE_REGISTRY_USER", str(config.get("EDOPS_IMAGE_REGISTRY_USER", "")).strip())
+    password = os.getenv("EDOPS_IMAGE_REGISTRY_PASSWORD", str(config.get("EDOPS_IMAGE_REGISTRY_PASSWORD", "")).strip())
+    token = os.getenv("EDOPS_IMAGE_REGISTRY_TOKEN", str(config.get("EDOPS_IMAGE_REGISTRY_TOKEN", "")).strip())
+    if (username and password) or token:
+        return
+
+    fmt.echo_alert("检测到私有镜像仓库，但未配置认证信息。")
+    fmt.echo(
+        "  建议执行: "
+        "edops config save --set EDOPS_IMAGE_REGISTRY_USER=<用户名> "
+        "--set EDOPS_IMAGE_REGISTRY_PASSWORD=<密码>"
+    )
+    fmt.echo(
+        "  或执行: "
+        "edops config save --set EDOPS_IMAGE_REGISTRY_TOKEN=<Token>"
+    )
 
 
 def _ensure_data_directories(root: str, config: Config) -> None:
@@ -394,7 +426,9 @@ def save(
         validation_config = dict(config)
         tutor_config.update_with_defaults(validation_config)
         tutor_config.render_full(validation_config)
-        _validate_required_config(validation_config)
+        _validate_required_config(
+            validation_config, include_runtime_warnings=False
+        )
     
     # Create data/ subdirectories to ensure they exist before permissions service runs
     if not env_only:
@@ -489,7 +523,7 @@ def validate(context: Context) -> None:
     validation_config = dict(config)
     tutor_config.update_with_defaults(validation_config)
     tutor_config.render_full(validation_config)
-    _validate_required_config(validation_config)
+    _validate_required_config(validation_config, include_runtime_warnings=True)
     fmt.echo(fmt.info("✓ 配置验证通过"))
 
 

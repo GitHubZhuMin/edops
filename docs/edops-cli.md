@@ -9,8 +9,8 @@ EdOps 是联奕智慧教学团队的统一部署工具，基于 Tutor 构建，�
 EdOps 支持多种部署模式：
 
 - **local**: 单机 Docker Compose 部署
-- **portainer**: Docker Swarm / Portainer 多节点部署
-- **k8s**: Kubernetes 部署（规划中）
+- **portainer**: Docker Swarm / Portainer stack 渲染与交付
+- **k8s**: 本期 CLI 入口屏蔽（保留代码，不对外提供命令）
 
 ### 模块系统
 
@@ -70,6 +70,18 @@ edops config validate
 - `EDOPS_IMAGE_REGISTRY`
 - `EDOPS_MASTER_NODE_IP`
 - `EDOPS_NETWORK_NAME`
+
+校验行为补充：
+- 模块依赖仅输出提示，不阻断命令。
+- 私有镜像仓库缺少认证时会输出下一步配置建议（用户名密码或 Token）。
+
+私有仓库认证补充示例：
+
+```bash
+edops config save --set EDOPS_IMAGE_REGISTRY_USER="tcr\$edops" --set EDOPS_IMAGE_REGISTRY_PASSWORD="your-password"
+# 或
+edops config save --set EDOPS_IMAGE_REGISTRY_TOKEN="your-token"
+```
 
 
 ## 部署命令
@@ -230,18 +242,28 @@ docker push ${EDOPS_IMAGE_REGISTRY}/library/permissions:v1.0.0
 - **业务服务**：
   - Spring Boot 微服务: UID 1000（预留，当前无数据目录挂载）
 
-## Portainer 命令（实验性）
+## Portainer 命令（本期可用：仅渲染）
 
 ### edops portainer render
 
-渲染 Portainer / Swarm 模板。
+渲染 Portainer / Swarm stack 文件。
 
 ```bash
 edops portainer render
 edops portainer render base
+edops portainer render common
+edops portainer render zhjx_media
 ```
 
-注意：Portainer 模板支持目前处于实验阶段。
+输出文件：
+- `edops portainer render` -> `<root>/portainer/docker-stack.yml`
+- `edops portainer render <module>` -> `<root>/portainer/docker-stack.<module>.yml`
+
+命令会输出部署示例：
+
+```bash
+docker stack deploy -c <stack-file> <stack-name>
+```
 
 ## 常见场景
 

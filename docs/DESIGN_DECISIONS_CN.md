@@ -59,7 +59,7 @@ jenkins build ly-ac-gateway-svc --branch develop
 ## 2. 配置策略：仅部署模式，无多环境 🔧
 
 ### 决策
-**EdOps 只区分部署模式（local/portainer/k8s），不引入 dev/beta/prod 环境配置文件。**
+**EdOps 只区分部署模式（local/portainer/k8s），不引入 dev/beta/prod 环境配置文件；其中 K8s 本期屏蔽 CLI 入口。**
 
 ### 背景
 在讨论配置管理时，原计划包含多环境配置覆盖（`env/dev.yml`、`env/beta.yml`、`env/prod.yml`）。最终决定简化为仅部署模式。
@@ -67,7 +67,7 @@ jenkins build ly-ac-gateway-svc --branch develop
 ### 理由
 1. **避免复杂性** - 多环境配置会增加理解和维护成本
 2. **单一配置源** - 所有环境共享同一个 `config.yml`，减少歧义
-3. **部署模式已足够** - local/portainer/k8s 已能满足不同场景需求
+3. **部署模式边界清晰** - 本期交付 local/portainer，k8s 预留后续迭代
 4. **配置简单化** - 通过修改 `config.yml` 中的变量即可适配不同环境
 
 ### 部署模式说明
@@ -82,15 +82,14 @@ edops local launch
 #### portainer 模式（Swarm）
 ```bash
 edops portainer render
-# 使用模板: tutor/templates/edops/portainer/*.yml（规划中）
+# 使用 local 渲染后的 compose 合并输出 stack 文件
 # 适用场景: 多节点 Docker Swarm 集群
 ```
 
 #### k8s 模式（Kubernetes）
 ```bash
-edops k8s launch
-# 使用模板: tutor/templates/k8s/*.yml
-# 适用场景: Kubernetes 集群部署
+# 本期在 CLI 中屏蔽
+# 保留 tutor/templates/k8s/*.yml 代码资产，后续按里程碑恢复
 ```
 
 ### 环境差异处理
@@ -157,7 +156,7 @@ edops images list
 #### 对于 Open edX（可使用 tutor）
 ```bash
 tutor local launch
-tutor k8s start
+# k8s 入口本期屏蔽，不提供执行命令
 ```
 
 #### 两者完全等价
@@ -354,7 +353,7 @@ edops local launch
 
 ## 9. 部署模式架构 🏛️
 
-### 三种部署模式
+### 部署模式（本期）
 
 #### local - 单机模式
 - **技术栈**: Docker Compose
@@ -365,14 +364,13 @@ edops local launch
 #### portainer - Swarm 模式
 - **技术栈**: Docker Swarm + Portainer
 - **适用场景**: 多节点集群、中等规模生产环境
-- **模板位置**: `tutor/templates/edops/portainer/`（规划中）
-- **命令**: `edops portainer render/deploy`
+- **模板来源**: 基于 `local/*.yml` 合并渲染 stack 文件
+- **命令**: `edops portainer render`
 
 #### k8s - Kubernetes 模式
 - **技术栈**: Kubernetes + Helm
-- **适用场景**: 大规模生产环境、云原生部署
-- **模板位置**: `tutor/templates/k8s/`
-- **命令**: `edops k8s launch/start/stop`
+- **本期状态**: CLI 入口屏蔽（代码与模板保留）
+- **恢复方式**: 下一阶段按里程碑恢复命令与测试
 
 ### 模板共享
 - 所有模式共享同一个 `config.yml`

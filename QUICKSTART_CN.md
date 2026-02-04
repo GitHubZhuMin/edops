@@ -51,6 +51,14 @@ edops config validate
 edops config render base
 ```
 
+若 `edops config validate` 提示私有仓库认证缺失，可直接执行：
+
+```bash
+edops config save --set EDOPS_IMAGE_REGISTRY_USER="tcr\$edops" --set EDOPS_IMAGE_REGISTRY_PASSWORD="your-password"
+# 或
+edops config save --set EDOPS_IMAGE_REGISTRY_TOKEN="your-token"
+```
+
 ### 部署管理
 
 ```bash

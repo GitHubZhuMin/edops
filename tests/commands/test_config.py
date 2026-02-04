@@ -109,8 +109,20 @@ class ConfigTests(unittest.TestCase, TestCommandMixin):
             config["RUN_ZHJX_MEDIA"] = True
             tutor_config.save_config_file(root, config)
             result = self.invoke_in_root(root, ["config", "validate"])
-        self.assertNotEqual(0, result.exit_code)
-        self.assertIn("RUN_ZHJX_ZLMEDIAKIT", result.output)
+        message = result.output + getattr(result, "stderr", "")
+        self.assertEqual(0, result.exit_code)
+        self.assertIn("模块依赖提示", message)
+        self.assertIn("RUN_ZHJX_ZLMEDIAKIT", message)
+
+    def test_config_save_does_not_warn_module_deps(self) -> None:
+        with temporary_root() as root:
+            result = self.invoke_in_root(
+                root,
+                ["config", "save", "--set", "RUN_ZHJX_MEDIA=true"],
+            )
+        message = result.output + getattr(result, "stderr", "")
+        self.assertEqual(0, result.exit_code)
+        self.assertNotIn("模块依赖提示", message)
 
 
 class PatchesTests(unittest.TestCase, TestCommandMixin):
