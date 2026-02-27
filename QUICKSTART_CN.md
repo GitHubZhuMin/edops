@@ -1,5 +1,32 @@
 # EdOps 快速开始
 
+## 一键下载安装与初始化（推荐）
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/GitHubZhuMin/edops/edops/install.sh | bash
+```
+
+默认将执行：
+- 克隆源码到 `~/.edops/src`
+- 安装 CLI 到 `~/.edops/venv`
+- 自动写入 shell 环境变量（可直接全局执行 `edops`）
+- 初始化配置：`edops config save --init --preset standard`
+- 预检查与基础准备：`edops local bootstrap`
+
+若 Docker daemon 尚未启动，脚本会自动跳过 bootstrap，并提示后续手动补跑命令。
+
+可选参数示例：
+
+```bash
+# 跳过 bootstrap（仅完成安装和 config 初始化）
+curl -fsSL https://raw.githubusercontent.com/GitHubZhuMin/edops/edops/install.sh | \
+  bash -s -- --skip-bootstrap
+
+# 自定义安装目录和环境目录
+curl -fsSL https://raw.githubusercontent.com/GitHubZhuMin/edops/edops/install.sh | \
+  bash -s -- --dir /opt/edops --root /data/edops --preset minimal
+```
+
 ## 安装完成 ✓
 
 EdOps 已成功安装在虚拟环境中。
@@ -11,8 +38,11 @@ EdOps 已成功安装在虚拟环境中。
 每次使用 edops 前，需要先激活虚拟环境：
 
 ```bash
-cd <edops-repo-root>
-source venv/bin/activate
+# 一键安装默认路径
+source ~/.edops/venv/bin/activate
+
+# 或者（你自定义了 --venv 时）
+source <your-venv-dir>/bin/activate
 ```
 
 激活后，命令行提示符会显示 `(venv)`。

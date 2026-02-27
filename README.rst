@@ -55,6 +55,31 @@ EdOps 本期聚焦 `local` 与 `portainer` 两种可交付模式，K8s 入口在
 快速入门
 --------
 
+**方式 A（推荐）：一键下载安装并初始化**
+
+.. code-block:: bash
+
+  curl -fsSL https://raw.githubusercontent.com/GitHubZhuMin/edops/edops/install.sh | bash
+
+默认会执行安装与初始化流程：
+
+- 克隆源码到 ``~/.edops/src``
+- 安装 CLI 到 ``~/.edops/venv``
+- 自动写入 shell 环境变量（可直接全局执行 ``edops``）
+- 执行 ``edops config save --init --preset standard``
+- 执行 ``edops local bootstrap``
+
+若 Docker daemon 尚未启动，脚本会自动跳过 bootstrap，并提示后续手动补跑命令。
+
+如需跳过 bootstrap（仅安装+初始化配置）：
+
+.. code-block:: bash
+
+  curl -fsSL https://raw.githubusercontent.com/GitHubZhuMin/edops/edops/install.sh | \
+    bash -s -- --skip-bootstrap
+
+**方式 B：手动安装**
+
 1.  **克隆仓库：**
 
     .. code-block:: bash
