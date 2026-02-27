@@ -280,6 +280,73 @@ edops config validate
 edops local launch --pullimages
 ```
 
+## Local 离线交付流程（推荐）
+
+### 1) 适用场景与前提
+
+- 适用于目标环境无法直接访问镜像仓库的交付场景。
+- 仅覆盖 `local` 单机部署链路，不包含 `k8s`。
+- 在线机与离线机应使用同一版本的 EdOps 配置与模板。
+- 先在在线机执行配置校验，确保关键配置完整：
+
+```bash
+edops config validate
+```
+
+### 2) 在线机生成镜像清单
+
+在在线机根据当前 `local` 编排生成镜像列表：
+
+```bash
+edops local dc config --images | sort -u > images.txt
+```
+
+建议人工复核 `images.txt`，确认包含本次交付所需模块镜像。
+
+### 3) 在线机拉取并打包镜像
+
+```bash
+while read -r image; do docker pull "$image"; done < images.txt
+docker save $(cat images.txt) -o edops-images-<date>.tar
+shasum -a 256 edops-images-<date>.tar > edops-images-<date>.tar.sha256
+```
+
+### 4) 传输与完整性校验
+
+将以下文件传输到离线机：
+
+- `images.txt`
+- `edops-images-<date>.tar`
+- `edops-images-<date>.tar.sha256`
+
+在离线机校验 tar 包完整性：
+
+```bash
+shasum -a 256 -c edops-images-<date>.tar.sha256
+```
+
+### 5) 离线机导入并部署
+
+```bash
+docker load -i edops-images-<date>.tar
+edops local launch
+```
+
+注意：离线环境启动时不要使用 `--pullimages`，避免触发在线拉取。
+
+### 6) 验收与排障
+
+```bash
+edops local healthcheck
+```
+
+如需进一步检查运行态，可结合以下命令：
+
+```bash
+edops local status
+edops local logs --tail 100 <service-name>
+```
+
 ### 版本升级
 
 ```bash
@@ -419,6 +486,18 @@ docker login zhjx-images.tencentcloudcr.com
 # 3. 手动拉取测试
 docker pull zhjx-images.tencentcloudcr.com/<image>:<tag>
 ```
+
+离线专项排障：
+
+- `401 Unauthorized`：
+  - 原因：私有仓库认证信息缺失或失效。
+  - 处理：执行 `docker login <registry>`，或通过 `edops config save --set EDOPS_IMAGE_REGISTRY_USER=... --set EDOPS_IMAGE_REGISTRY_PASSWORD=...` / `EDOPS_IMAGE_REGISTRY_TOKEN` 补齐认证后重试。
+- `manifest unknown`：
+  - 原因：目标 tag 不存在，或在线导出时未包含该镜像版本。
+  - 处理：在在线机先用 `edops images versions <service>` 确认 tag，再重新执行 `docker pull` 与 `docker save`。
+- `pull access denied`：
+  - 原因：镜像仓库路径错误、无访问权限，或离线机误触发拉取。
+  - 处理：核对 `images.txt` 中镜像全名与权限；离线机仅执行 `docker load -i ...` + `edops local launch`，不要使用 `--pullimages`。
 
 ## 开发与贡献
 

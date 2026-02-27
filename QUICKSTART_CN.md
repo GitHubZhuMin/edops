@@ -11,7 +11,7 @@ EdOps 已成功安装在虚拟环境中。
 每次使用 edops 前，需要先激活虚拟环境：
 
 ```bash
-cd /Users/zhumin/zhjx/edops
+cd <edops-repo-root>
 source venv/bin/activate
 ```
 
@@ -148,7 +148,7 @@ deactivate
 为了更方便使用，可以在 `~/.zshrc` 中添加别名：
 
 ```bash
-alias edops='source /Users/zhumin/zhjx/edops/venv/bin/activate && edops'
+alias edops='source <edops-repo-root>/venv/bin/activate && edops'
 ```
 
 然后重新加载配置：
@@ -175,7 +175,7 @@ edops local launch --pullimages
 
 ```bash
 # 1. 激活环境
-cd /Users/zhumin/zhjx/edops
+cd <edops-repo-root>
 source venv/bin/activate
 
 # 2. 配置系统
@@ -189,6 +189,33 @@ edops local launch --pullimages
 
 # 5. 检查状态
 edops local status
+edops local healthcheck
+```
+
+### 离线部署（Local）快速路径
+
+仅覆盖 `local` 单机交付，不包含 `k8s`。完整说明请参考 [docs/edops-cli.md](docs/edops-cli.md) 中的 `Local 离线交付流程（推荐）`。
+
+```bash
+# 1. 在线机校验配置
+edops config validate
+
+# 2. 在线机生成镜像清单
+edops local dc config --images | sort -u > images.txt
+
+# 3. 在线机拉取并打包镜像
+while read -r image; do docker pull "$image"; done < images.txt
+docker save $(cat images.txt) -o edops-images-<date>.tar
+shasum -a 256 edops-images-<date>.tar > edops-images-<date>.tar.sha256
+
+# 4. 离线机校验并导入
+shasum -a 256 -c edops-images-<date>.tar.sha256
+docker load -i edops-images-<date>.tar
+
+# 5. 离线机启动平台（不要使用 --pullimages）
+edops local launch
+
+# 6. 验收检查
 edops local healthcheck
 ```
 
@@ -240,7 +267,7 @@ edops local launch
 
 确保已激活虚拟环境：
 ```bash
-source /Users/zhumin/zhjx/edops/venv/bin/activate
+source <edops-repo-root>/venv/bin/activate
 ```
 
 ### 查看日志
@@ -263,7 +290,7 @@ edops config printroot
 ## 更新依赖
 
 ```bash
-cd /Users/zhumin/zhjx/edops
+cd <edops-repo-root>
 source venv/bin/activate
 pip install -e . --upgrade
 ```
