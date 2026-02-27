@@ -66,6 +66,7 @@ EdOps 本期聚焦 `local` 与 `portainer` 两种可交付模式，K8s 入口在
 - 克隆源码到 ``~/.edops/src``
 - 安装 CLI 到 ``~/.edops/venv``
 - 自动写入 shell 环境变量（可直接全局执行 ``edops``）
+- 默认自动激活 EdOps 虚拟环境（可用 ``--skip-auto-activate`` 关闭）
 - 执行 ``edops config save --init --preset standard``
 - 执行 ``edops local bootstrap``
 

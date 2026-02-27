@@ -26,6 +26,7 @@ EdOps 安装与初始化脚本
   --skip-init            跳过 edops config save --init
   --skip-bootstrap       跳过 edops local bootstrap
   --skip-global-path     跳过写入 shell 环境变量（PATH）
+  --skip-auto-activate   跳过默认自动激活虚拟环境
 
 示例:
   curl -fsSL https://raw.githubusercontent.com/GitHubZhuMin/edops/edops/install.sh | bash
@@ -106,6 +107,7 @@ upsert_shell_block() {
 setup_global_path() {
   local env_file="$1"
   local bin_dir="$2"
+  local auto_activate="$3"
   local block_line=""
   local rc_file=""
 
@@ -116,6 +118,18 @@ export EDOPS_INSTALL_DIR="$INSTALL_DIR"
 export EDOPS_VENV_DIR="$VENV_DIR"
 export EDOPS_BIN="$EDOPS_BIN"
 export PATH="$bin_dir:\$PATH"
+export EDOPS_AUTO_ACTIVATE="$auto_activate"
+
+# In interactive shells, auto-activate EdOps venv by default.
+if [ -n "\${PS1:-}" ] && [ "\${EDOPS_AUTO_ACTIVATE:-1}" = "1" ]; then
+  if [ -z "\${VIRTUAL_ENV:-}" ] || [ "\${VIRTUAL_ENV}" = "\${EDOPS_VENV_DIR}" ]; then
+    if [ -f "\${EDOPS_VENV_DIR}/bin/activate" ]; then
+      . "\${EDOPS_VENV_DIR}/bin/activate"
+    elif [ -f "\${EDOPS_VENV_DIR}/Scripts/activate" ]; then
+      . "\${EDOPS_VENV_DIR}/Scripts/activate"
+    fi
+  fi
+fi
 EOF
 
   block_line="if [ -f \"$env_file\" ]; then . \"$env_file\"; fi"
@@ -123,6 +137,32 @@ EOF
   for rc_file in "${RC_FILES[@]}"; do
     upsert_shell_block "$rc_file" "$block_line"
   done
+}
+
+install_command_shim() {
+  local target_bin="$1"
+  local path_dir=""
+  local shim_path=""
+  local -a path_items=()
+
+  IFS=':' read -r -a path_items <<<"$PATH"
+  for path_dir in "${path_items[@]}"; do
+    [[ -n "$path_dir" ]] || continue
+    [[ -d "$path_dir" ]] || continue
+    [[ -w "$path_dir" ]] || continue
+
+    shim_path="$path_dir/edops"
+    if [[ -e "$shim_path" && ! -L "$shim_path" ]]; then
+      continue
+    fi
+
+    if ln -sfn "$target_bin" "$shim_path" 2>/dev/null; then
+      EDOPS_SHIM_PATH="$shim_path"
+      return 0
+    fi
+  done
+
+  return 1
 }
 
 REPO_URL="${EDOPS_INSTALL_REPO:-$DEFAULT_REPO_URL}"
@@ -142,6 +182,7 @@ fi
 SKIP_INIT="false"
 SKIP_BOOTSTRAP="false"
 SKIP_GLOBAL_PATH="false"
+SKIP_AUTO_ACTIVATE="false"
 GLOBAL_ENV_FILE="${EDOPS_INSTALL_ENV_FILE:-$HOME/.config/edops/env.sh}"
 
 while [[ $# -gt 0 ]]; do
@@ -196,6 +237,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --skip-global-path)
       SKIP_GLOBAL_PATH="true"
+      shift 1
+      ;;
+    --skip-auto-activate)
+      SKIP_AUTO_ACTIVATE="true"
       shift 1
       ;;
     *)
@@ -294,20 +339,43 @@ fi
 
 EDOPS_BIN_DIR="$(dirname "$EDOPS_BIN")"
 export PATH="$EDOPS_BIN_DIR:$PATH"
+EDOPS_SHIM_PATH=""
+
+if install_command_shim "$EDOPS_BIN"; then
+  SHIM_STATUS="是 ($EDOPS_SHIM_PATH)"
+else
+  SHIM_STATUS="否（未找到可写 PATH 目录）"
+fi
 
 if [[ "$SKIP_GLOBAL_PATH" != "true" ]]; then
-  if setup_global_path "$GLOBAL_ENV_FILE" "$EDOPS_BIN_DIR"; then
+  if [[ "$SKIP_AUTO_ACTIVATE" != "true" ]]; then
+    AUTO_ACTIVATE_VALUE="1"
+  else
+    AUTO_ACTIVATE_VALUE="0"
+  fi
+  if setup_global_path "$GLOBAL_ENV_FILE" "$EDOPS_BIN_DIR" "$AUTO_ACTIVATE_VALUE"; then
     GLOBAL_PATH_STATUS="是"
     GLOBAL_PATH_HINT="source \"$GLOBAL_ENV_FILE\""
+    if [[ "$AUTO_ACTIVATE_VALUE" == "1" ]]; then
+      AUTO_ACTIVATE_STATUS="是"
+    else
+      AUTO_ACTIVATE_STATUS="否（用户跳过）"
+    fi
   else
     GLOBAL_PATH_STATUS="否（自动写入失败）"
     GLOBAL_PATH_HINT="export PATH=\"$EDOPS_BIN_DIR:\$PATH\""
+    AUTO_ACTIVATE_STATUS="否（自动写入失败）"
     echo "⚠️ 自动写入全局 PATH 失败。"
     echo "   可手动执行: export PATH=\"$EDOPS_BIN_DIR:\$PATH\""
   fi
 else
   GLOBAL_PATH_STATUS="否（用户跳过）"
   GLOBAL_PATH_HINT="export PATH=\"$EDOPS_BIN_DIR:\$PATH\""
+  AUTO_ACTIVATE_STATUS="否（未写入全局环境）"
+fi
+
+if [[ -n "$EDOPS_SHIM_PATH" ]]; then
+  GLOBAL_PATH_HINT="edops --version"
 fi
 
 if [[ -n "$ROOT_DIR" ]]; then
@@ -354,6 +422,8 @@ cat <<EOF
 👉 初始化预设: ${PRESET:-<未使用>}
 👉 已执行初始化: $INIT_STATUS
 👉 已执行 bootstrap: $BOOTSTRAP_STATUS
+👉 PATH 直连命令: $SHIM_STATUS
 👉 全局 PATH: $GLOBAL_PATH_STATUS
+👉 默认激活虚拟环境: $AUTO_ACTIVATE_STATUS
 👉 立即生效执行: $GLOBAL_PATH_HINT
 EOF

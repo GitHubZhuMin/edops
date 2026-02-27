@@ -25,6 +25,10 @@ curl -fsSL https://raw.githubusercontent.com/GitHubZhuMin/edops/edops/install.sh
 # 自定义安装目录和环境目录
 curl -fsSL https://raw.githubusercontent.com/GitHubZhuMin/edops/edops/install.sh | \
   bash -s -- --dir /opt/edops --root /data/edops --preset minimal
+
+# 关闭默认自动激活虚拟环境（仅保留 edops 全局可用）
+curl -fsSL https://raw.githubusercontent.com/GitHubZhuMin/edops/edops/install.sh | \
+  bash -s -- --skip-auto-activate
 ```
 
 ## 安装完成 ✓
@@ -33,19 +37,20 @@ EdOps 已成功安装在虚拟环境中。
 
 ## 使用方法
 
-### 1. 激活虚拟环境
+### 1. 默认自动激活（安装脚本方式）
 
-每次使用 edops 前，需要先激活虚拟环境：
+使用安装脚本后，新终端会默认激活 EdOps 虚拟环境，通常不需要手工执行 `source`。
+如果你刚安装完成并希望在当前终端立即生效，可执行：
 
 ```bash
-# 一键安装默认路径
-source ~/.edops/venv/bin/activate
-
-# 或者（你自定义了 --venv 时）
-source <your-venv-dir>/bin/activate
+source ~/.config/edops/env.sh
 ```
 
-激活后，命令行提示符会显示 `(venv)`。
+若你安装时使用了 `--skip-auto-activate`，可手工激活：
+
+```bash
+source ~/.edops/venv/bin/activate
+```
 
 ### 2. 验证安装
 
@@ -295,9 +300,14 @@ edops local launch
 
 ### 命令找不到
 
-确保已激活虚拟环境：
+先执行全局环境文件：
 ```bash
-source <edops-repo-root>/venv/bin/activate
+source ~/.config/edops/env.sh
+```
+
+若你显式关闭自动激活（`--skip-auto-activate`），再手工激活 venv：
+```bash
+source ~/.edops/venv/bin/activate
 ```
 
 ### 查看日志
